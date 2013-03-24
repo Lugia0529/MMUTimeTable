@@ -35,6 +35,7 @@ import android.graphics.Typeface;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -75,11 +76,17 @@ public class DayView extends View
     private int mTimeGridWidth;
     private int mCellHeight;
     
+    /**
+     * Use to handle time diff for day switching animation
+     */
+    private long mLastTimeMillies = 0;
+    
     private final int SWIPE_PAGE_MIN_DISTANCE;
     private final int SWIPE_MIN_VELOCITY;
     private final int SWIPE_OVERFLING_DISTANCE;
     
     private int mScrollMode;
+    private int mSwitchMode;
     
     private float mScrollX;
     private float mScrollY;
@@ -104,11 +111,15 @@ public class DayView extends View
     /**
      * transition duration when user switch day
      */
-    public static final int DAY_SWITCH_DURATION = 500;
+    public static final float DAY_SWITCH_DURATION = 300f;
     
     public static final int SCROLL_MODE_NONE       = 1 << 0;
     public static final int SCROLL_MODE_VERTICAL   = 1 << 1;
     public static final int SCROLL_MODE_HORIZONTAL = 1 << 2;
+    
+    public static final int SWITCH_MODE_PREV = -1;
+    public static final int SWITCH_MODE_NONE =  0;
+    public static final int SWITCH_MODE_NEXT =  1;
     
     private static final String TAG = "DayView";
     
@@ -144,6 +155,8 @@ public class DayView extends View
         mTimeStrings = mResources.getStringArray(R.array.time_string);
         
         mScrollMode = SCROLL_MODE_NONE;
+        mSwitchMode = SWITCH_MODE_NONE;
+        
         mScrollX = 0;
         mScrollY = 0;
         mScaleFactor = 1;
@@ -541,6 +554,11 @@ public class DayView extends View
             // continue horizontal switching
             if (mScrollX != 0)
             {
+                Boolean condition = (Math.abs(mScrollX) > mTimeGridWidth) ^ (mScrollX > 0);
+                
+                mSwitchMode = condition ? SWITCH_MODE_PREV : SWITCH_MODE_NEXT;
+                
+                mLastTimeMillies = SystemClock.elapsedRealtime();
                 mHandler.post(mContinueSwitch);
             }
         }
@@ -619,10 +637,14 @@ public class DayView extends View
             
             if (mScrollMode == SCROLL_MODE_VERTICAL)
                 mScrollY += distanceY;
-            else if (mScrollMode == SCROLL_MODE_HORIZONTAL)
+            
+            if (mScrollMode == SCROLL_MODE_HORIZONTAL)
             {
-                if (!((distanceX < 0 && mCurrentDay == MONDAY) || (distanceX > 0 && mCurrentDay == FRIDAY)))
-                    mScrollX += distanceX;
+                mScrollX += distanceX;
+                
+                // dont allow user over scrolling Monday and Friday
+                if ((mScrollX < 0 && mCurrentDay == MONDAY) || (mScrollX > 0 && mCurrentDay == FRIDAY))
+                    mScrollX = 0;
             }
             
             remeasure();
@@ -691,42 +713,50 @@ public class DayView extends View
     {
         public void run()
         {
-            // TODO: should be dynamically change according to the update time
-            float slideAmount = 48;
-            
-            float oriX = mScrollX;
-            
-            // only switch day when mScrollX value exceed threshold
-            if (Math.abs(mScrollX) > SWIPE_PAGE_MIN_DISTANCE)
-                mScrollX += mScrollX < 0 ? -slideAmount : slideAmount;
-            else
-                mScrollX -= mScrollX < 0 ? -slideAmount : slideAmount;
-            
-            // TODO: noob logic, switch cancel finish
-            // this logic is damn dangerous if any of the X value ngam ngam hit 0
-            if ((oriX > 0 && mScrollX < 0) || (oriX < 0 && mScrollX > 0))
-            {
-                mScrollX = 0;
-                
-                invalidate();
-                
+            if (mSwitchMode == SWITCH_MODE_NONE)
                 return;
+            
+            // check for time different between last and current execution of this thread
+            // so we can know how much to scroll the view, this help us maintain a constant
+            // time between day switching animation.
+            long diff = SystemClock.elapsedRealtime() - mLastTimeMillies;
+            mLastTimeMillies = SystemClock.elapsedRealtime();
+            
+            float scrollAmount = mWidth / DAY_SWITCH_DURATION * diff;
+            
+            boolean switchFinish = false;
+            
+            if (mSwitchMode == SWITCH_MODE_PREV)
+            {
+                mScrollX -= scrollAmount;
+                
+                switchFinish = mScrollX > 0 || Math.abs(mScrollX) > mWidth;
+            }
+            else if (mSwitchMode == SWITCH_MODE_NEXT)
+            {
+                mScrollX += scrollAmount;
+                
+                switchFinish = mScrollX < 0 || Math.abs(mScrollX) > mWidth;
             }
             
-            // switch finish
-            if (Math.abs(mScrollX) > mWidth)
+            // day switch finish
+            if (switchFinish)
             {
                 Log.d(TAG, "Switch finish");
                 
-                if (mScrollX < 0)
-                    mCurrentDay--;
-                else
-                    mCurrentDay++;
+                if (Math.abs(mScrollX) >= mWidth)
+                {
+                    if (mSwitchMode == SWITCH_MODE_PREV)
+                        mCurrentDay--;
+                    else if (mSwitchMode == SWITCH_MODE_NEXT)
+                        mCurrentDay++;
+                    
+                    if (mDayChangeListener != null)
+                        mDayChangeListener.onDayChange(mCurrentDay);
+                }
                 
+                mSwitchMode = SWITCH_MODE_NONE;
                 mScrollX = 0;
-                
-                if (mDayChangeListener != null)
-                    mDayChangeListener.onDayChange(mCurrentDay);
                 
                 invalidate();
                 
