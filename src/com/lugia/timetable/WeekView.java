@@ -83,6 +83,7 @@ public class WeekView extends View
     private String mFilename;
     
     private String[] mTimeStrings;
+    private String[] mDayStrings;
     
     public static final int TEXT_PADDING = 6;
     
@@ -122,6 +123,7 @@ public class WeekView extends View
         mTimeBackgroundColor = mResources.getColor(R.color.timetable_time_background_color);
         
         mTimeStrings = mResources.getStringArray(R.array.time_string);
+        mDayStrings = mResources.getStringArray(R.array.day_string);
         
         mScrollMode = SCROLL_MODE_NONE;
         mScrollY = 0;
@@ -164,7 +166,7 @@ public class WeekView extends View
     private void remeasure()
     {
         mCellHeight = (int)(100 * mScaleFactor);
-        mActualHeight = mCellHeight * mTimeStrings.length;
+        mActualHeight = mCellHeight * mTimeStrings.length + mHeaderHeight;
         
         // check for scroll position
         if (mScrollY < 0)
@@ -172,7 +174,6 @@ public class WeekView extends View
         
         if (mScrollY + mHeight > mActualHeight)
             mScrollY = mActualHeight - mHeight;
-        
     }
     
     @Override
@@ -186,7 +187,7 @@ public class WeekView extends View
         
         mTimePaint.getTextBounds("XXX", 0, 3, mTextBound);
         
-        mHeaderHeight = mTextBound.height() + 2;
+        mHeaderHeight = mTextBound.height() + 10;
         
         setMeasuredDimension(mWidth, mHeight);
         
@@ -198,8 +199,11 @@ public class WeekView extends View
     {
         canvas.drawColor(Color.WHITE);
         
+        // draw the header first
+        drawWeekHeader(canvas);
+        
         canvas.save();
-        canvas.translate(0, -mScrollY);
+        canvas.translate(0, -mScrollY + mHeaderHeight);
         
         // time background
         mBackgroundPaint.setColor(mTimeBackgroundColor);
@@ -237,10 +241,16 @@ public class WeekView extends View
     
     private void drawWeekHeader(Canvas canvas)
     {
-        /*
         mBackgroundPaint.setColor(mTimeBackgroundColor);
         canvas.drawRect(0, 0, mWidth, mHeaderHeight, mBackgroundPaint);
-        */
+        
+        canvas.drawLine(0, mHeaderHeight, mWidth, mHeaderHeight, mLinePaint);
+        
+        for (int i = 0; i < 5; i++)
+        {
+            int x = mTimeGridWidth + (mDayGridWidth * i) + (mDayGridWidth / 2);
+            canvas.drawText(mDayStrings[i + 1], x, mHeaderHeight - 5, mTimePaint);
+        }
     }
     
     private void drawSubject(Canvas canvas)

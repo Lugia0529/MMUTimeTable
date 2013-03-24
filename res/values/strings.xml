@@ -68,7 +68,17 @@
         <item>9PM</item>
         <item>10PM</item>
     </string-array>
-
+    
+    <string-array name="day_string">
+        <item>SUN</item>
+        <item>MON</item>
+        <item>TUE</item>
+        <item>WED</item>
+        <item>THU</item>
+        <item>FRI</item>
+        <item>SAT</item>
+    </string-array>
+    
     <string name="action_open_file">Open File</string>
     <string name="action_download_data">Download Data</string>
     <string name="action_settings">Settings</string>
