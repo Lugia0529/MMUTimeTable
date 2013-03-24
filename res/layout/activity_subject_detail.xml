@@ -21,7 +21,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-
+    
     <RelativeLayout
         android:id="@+id/layout_header"
         android:layout_width="match_parent"
@@ -29,7 +29,7 @@
         android:background="#FF33B5E5"
         android:orientation="vertical"
         android:padding="8dp">
-
+        
         <TextView
             android:id="@+id/text_subject_title"
             android:layout_width="wrap_content"
@@ -42,7 +42,7 @@
             android:textSize="24sp"
             android:textStyle="bold"
         />
-
+        
         <TextView
             android:id="@+id/text_lecture_section"
             android:layout_width="wrap_content"
@@ -54,7 +54,7 @@
             android:textColor="#FFFFFFFF"
             android:textSize="16sp"
         />
-
+        
         <TextView
             android:id="@+id/text_tutorial_section"
             android:layout_width="wrap_content"
@@ -98,53 +98,53 @@
                 android:orientation="vertical">
                 
                 <TextView
-	               android:layout_width="wrap_content"
-	               android:layout_height="wrap_content"
-	               android:layout_marginLeft="4dp"
-	               android:singleLine="true"
-	               android:text="@string/text_lecture_section"
-	               android:textStyle="bold"
-		            android:textSize="16sp"
-		        />
-		        
-		        <View
-		            android:id="@+id/view_lecture_divider"
-		            android:layout_width="match_parent"
-		            android:layout_height="2dp"
-		            android:background="#FF33B5E5"
-		        />
-		        
-		    </LinearLayout>
-		        
-	        <View
-	            android:layout_width="match_parent"
-	            android:layout_height="8dp"
-	        />
-	        
-	        <LinearLayout
-	            android:id="@+id/layout_tutorial_section"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:singleLine="true"
+                    android:text="@string/text_lecture_section"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                />
+                
+                <View
+                    android:id="@+id/view_lecture_divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="#FF33B5E5"
+                />
+                
+            </LinearLayout>
+                
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+            />
+            
+            <LinearLayout
+                android:id="@+id/layout_tutorial_section"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-		        
-		        <TextView
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:layout_marginLeft="4dp"
-		            android:singleLine="true"
-		            android:text="@string/text_tutorial_section"
-		            android:textStyle="bold"
-		            android:textSize="16sp"
-		        />
-		        
-		        <View
-	                android:id="@+id/view_tutorial_divider"
-	                android:layout_width="match_parent"
-	                android:layout_height="2dp"
-	                android:background="#FF33B5E5"
-	            />
-		        
-		    </LinearLayout>
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:singleLine="true"
+                    android:text="@string/text_tutorial_section"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                />
+                
+                <View
+                    android:id="@+id/view_tutorial_divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="#FF33B5E5"
+                />
+                
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
