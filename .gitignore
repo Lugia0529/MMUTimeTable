@@ -1,0 +1,5 @@
+bin/
+gen/
+META-INF/
+.settings
+Thumbs.db
