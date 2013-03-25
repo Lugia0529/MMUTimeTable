@@ -163,6 +163,7 @@ public class DayView extends View
         
         mScrolling = false;
         
+        // set the current day of this view initially according to real world day
         switch (Calendar.getInstance().get(Calendar.DAY_OF_WEEK))
         {
             case Calendar.SATURDAY:
@@ -210,6 +211,7 @@ public class DayView extends View
         mWidth = MeasureSpec.getSize(widthMeasureSpec);
         mHeight = MeasureSpec.getSize(heightMeasureSpec);
         
+        // measure text dimension of time text
         mTimeGridWidth = (int)mTimePaint.measureText("XX XX") + 6;
         
         setMeasuredDimension(mWidth, mHeight);
@@ -234,6 +236,7 @@ public class DayView extends View
     {
         this.mCurrentDay = day;
         
+        // notify the listener
         if (mDayChangeListener != null)
             mDayChangeListener.onDayChange(day);
         
@@ -244,6 +247,7 @@ public class DayView extends View
     {
         this.mDayChangeListener = listener;
         
+        // notify the listener
         if (mDayChangeListener != null)
             mDayChangeListener.onDayChange(mCurrentDay);
     }
@@ -554,6 +558,7 @@ public class DayView extends View
             // continue horizontal switching
             if (mScrollX != 0)
             {
+                // check the direction of we are going to switching to
                 Boolean condition = (Math.abs(mScrollX) > mTimeGridWidth) ^ (mScrollX > 0);
                 
                 mSwitchMode = condition ? SWITCH_MODE_PREV : SWITCH_MODE_NEXT;
@@ -587,6 +592,7 @@ public class DayView extends View
             
             mScrolling = false;
             
+            // try to figure out where user click
             int value = (int)((mScrollY + e.getY()) / mCellHeight);
             
             // TODO: some hack
@@ -606,7 +612,7 @@ public class DayView extends View
                         Intent intent = new Intent(mContext, SubjectDetailActivity.class);
                         
                         intent.putExtra("subjectCode", subject.getSubjectCode());
-                  
+                        
                         if (mFilename != null)
                             intent.putExtra(MasterActivity.EXTRA_FILE_NAME, mFilename);
                   
@@ -642,7 +648,7 @@ public class DayView extends View
             {
                 mScrollX += distanceX;
                 
-                // dont allow user over scrolling Monday and Friday
+                // don't allow user over scrolling Monday and Friday
                 if ((mScrollX < 0 && mCurrentDay == MONDAY) || (mScrollX > 0 && mCurrentDay == FRIDAY))
                     mScrollX = 0;
             }
@@ -751,10 +757,12 @@ public class DayView extends View
                     else if (mSwitchMode == SWITCH_MODE_NEXT)
                         mCurrentDay++;
                     
+                    // notify the listener
                     if (mDayChangeListener != null)
                         mDayChangeListener.onDayChange(mCurrentDay);
                 }
                 
+                // reset the switch status
                 mSwitchMode = SWITCH_MODE_NONE;
                 mScrollX = 0;
                 

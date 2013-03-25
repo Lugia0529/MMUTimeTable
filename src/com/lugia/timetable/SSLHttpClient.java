@@ -48,6 +48,15 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
+// IMPORTATNT CORE FILE
+// DO NOT MODIFY THIS IF YOU NOT SURE WHAT YOU'RE DOING
+
+// This file is now work very correctly, modify of this file is not likely to happen, unless
+// there is something unexpected...
+
+/**
+ * Core class file for authenticate and handshake with HTTPS Server
+ */
 public final class SSLHttpClient extends DefaultHttpClient
 {
     private final HttpContext mHttpContext = new BasicHttpContext();

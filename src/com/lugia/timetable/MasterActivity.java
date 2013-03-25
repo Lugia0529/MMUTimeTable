@@ -29,6 +29,9 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.SpinnerAdapter;
 
+/**
+ * Main Activity
+ */
 public class MasterActivity extends FragmentActivity implements ActionBar.OnNavigationListener, DayView.OnDayChangeListener
 {
     private String mFilename;

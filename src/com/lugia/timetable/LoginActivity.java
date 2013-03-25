@@ -47,6 +47,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+/**
+ * Activity that allow user to enter MMU ID and password to retrieve their course data.
+ */
 public class LoginActivity extends Activity implements OnClickListener, TextWatcher
 {
     private Button mContinueButton;
@@ -102,6 +105,7 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
     
     public void afterTextChanged(Editable s)
     {
+        // only enable Continue button when both input is not empty
         if (mMmuIdInput.getText().length() > 0 && mPasswordInput.getText().length() > 0)
             mContinueButton.setEnabled(true);
         else
@@ -139,7 +143,7 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
                 // notify user
                 new AlertDialog.Builder(LoginActivity.this)
                                .setTitle("Opps!")
-                               .setMessage("Fail to login.")
+                               .setMessage("Fail to download course data, please make sure you have entered a correct MMU ID and password.")
                                .setPositiveButton("Close", new DialogInterface.OnClickListener()
                                 {
                                     public void onClick(DialogInterface dialog, int which)
@@ -224,6 +228,7 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
                 HttpGet courseGet = new HttpGet(COURSE_URL);
                 HttpResponse response = client.executeResponse(courseGet);
                 
+                // try to get the course detail
                 if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
                 {
                     Log.d(TAG, String.format("HTTP Status: %d", response.getStatusLine().getStatusCode()));

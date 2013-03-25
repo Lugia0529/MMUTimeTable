@@ -182,9 +182,13 @@ public class WeekView extends View
         mWidth = MeasureSpec.getSize(widthMeasureSpec);
         mHeight = MeasureSpec.getSize(heightMeasureSpec);
         
+        // measure the dimension of time text
         mTimeGridWidth = (int)mTimePaint.measureText("XX XX") + 6;
+        
+        // TODO: this is not a good way to know the actual day width
         mDayGridWidth = (int)(mWidth - mTimeGridWidth) / 5;
         
+        // measure the dimension of day text
         mTimePaint.getTextBounds("XXX", 0, 3, mTextBound);
         
         mHeaderHeight = mTextBound.height() + 10;

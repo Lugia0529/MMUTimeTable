@@ -23,6 +23,16 @@ import org.jsoup.select.Elements;
 
 import android.util.Log;
 
+// IMPORTATNT CORE FILE
+// DO NOT MODIFY THIS IF YOU NOT SURE WHAT YOU'RE DOING
+
+// This file is not guarantee to work for long term, as it strictly follow the structure of MMU ICEMS
+// website to parse the course detail, any small change in MMU ICEMS website could cause a great havoc
+// effect to the parsing procedure, update of this file is likely happen in such situation.
+
+/**
+ * Core class file for parsing course detail we get from MMU ICEMS.
+ */
 public class CourseParser
 {
     public static final int TYPE_NEW_TIME    = 4;
@@ -40,6 +50,9 @@ public class CourseParser
         "SAT"
     };
     
+    /**
+     * Default color assign to subject.
+     */
     private static final int[] BG_COLORS = new int[]
     {
         0xFFCE2029, // Fire Engine Red 
