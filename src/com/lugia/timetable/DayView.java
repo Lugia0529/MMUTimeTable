@@ -635,16 +635,16 @@ public class DayView extends View
                 float absDistX = Math.abs(distanceX);
                 float absDistY = Math.abs(distanceY);
                 
-                if (absDistX > absDistY)
-                    mScrollMode = SCROLL_MODE_HORIZONTAL;
-                else
+                // give vertical scroll a higher priority
+                if (absDistY >= absDistX)
                     mScrollMode = SCROLL_MODE_VERTICAL;
+                else
+                    mScrollMode = SCROLL_MODE_HORIZONTAL;
             }
             
             if (mScrollMode == SCROLL_MODE_VERTICAL)
                 mScrollY += distanceY;
-            
-            if (mScrollMode == SCROLL_MODE_HORIZONTAL)
+            else if (mScrollMode == SCROLL_MODE_HORIZONTAL)
             {
                 mScrollX += distanceX;
                 
@@ -664,15 +664,15 @@ public class DayView extends View
         {
             Log.d(TAG, "onFling");
             
-            float x1 = e1.getX();
-            float y1 = e1.getY();
-            
-            float x2 = e2.getX(); 
-            float y2 = e2.getY();
-            
-            // switch day logic is handle in onScroll
-            if (Math.abs(x1 - x2) > SWIPE_PAGE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_MIN_VELOCITY)
+            // don't handle fling if we are on horizontal scrolling
+            if (mScrollMode == SCROLL_MODE_HORIZONTAL || mSwitchMode != SWITCH_MODE_NONE)
+            {
+                mScrollMode = SCROLL_MODE_NONE;
                 return true;
+            }
+            
+            float y1 = e1.getY();
+            float y2 = e2.getY();
             
             // handle scroll
             if (Math.abs(y1 - y2) > SWIPE_PAGE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_MIN_VELOCITY)
@@ -736,13 +736,13 @@ public class DayView extends View
             {
                 mScrollX -= scrollAmount;
                 
-                switchFinish = mScrollX > 0 || Math.abs(mScrollX) > mWidth;
+                switchFinish = mScrollX > 0 || Math.abs(mScrollX) > mWidth || mCurrentDay == MONDAY;
             }
             else if (mSwitchMode == SWITCH_MODE_NEXT)
             {
                 mScrollX += scrollAmount;
                 
-                switchFinish = mScrollX < 0 || Math.abs(mScrollX) > mWidth;
+                switchFinish = mScrollX < 0 || Math.abs(mScrollX) > mWidth || mCurrentDay == FRIDAY;
             }
             
             // day switch finish

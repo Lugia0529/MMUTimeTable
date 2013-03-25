@@ -477,17 +477,9 @@ public class WeekView extends View
         {
             Log.d(TAG, "onScroll");
             
+            // we only have vertical scrolling on week view
             if (mScrollMode == SCROLL_MODE_NONE)
-            {
-                // try to figure out we are in horizontal or vertical scroll
-                float absDistX = Math.abs(distanceX);
-                float absDistY = Math.abs(distanceY);
-                
-                if (absDistX > absDistY)
-                    mScrollMode = SCROLL_MODE_HORIZONTAL;
-                else
-                    mScrollMode = SCROLL_MODE_VERTICAL;
-            }
+                mScrollMode = SCROLL_MODE_VERTICAL;
             
             if (mScrollMode == SCROLL_MODE_VERTICAL)
                 mScrollY += distanceY;
@@ -503,15 +495,8 @@ public class WeekView extends View
         {
             Log.d(TAG, "onFling");
             
-            float x1 = e1.getX();
             float y1 = e1.getY();
-            
-            float x2 = e2.getX(); 
             float y2 = e2.getY();
-            
-            // no switch day in week view
-            if (Math.abs(x1 - x2) > SWIPE_PAGE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_MIN_VELOCITY)
-                return true;
             
             // handle scroll
             if (Math.abs(y1 - y2) > SWIPE_PAGE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_MIN_VELOCITY)
