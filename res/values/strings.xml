@@ -79,6 +79,16 @@
         <item>SAT</item>
     </string-array>
     
+    <string-array name="day_long_string">
+        <item>Sunday</item>
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+    </string-array>
+    
     <string name="action_open_file">Open File</string>
     <string name="action_download_data">Download Data</string>
     <string name="action_settings">Settings</string>

@@ -26,14 +26,14 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.SpinnerAdapter;
 
 /**
  * Main Activity
  */
 public class MasterActivity extends FragmentActivity implements ActionBar.OnNavigationListener, DayView.OnDayChangeListener
 {
+    private TimeTableSpinnerAdapter mSpinnerAdapter;
+    
     private String mFilename;
     
     /**
@@ -61,18 +61,18 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_master);
         
-        mFilename = null;
-        
-        SpinnerAdapter spinnerAdapter = ArrayAdapter.createFromResource(MasterActivity.this, R.array.navigation_action_list, android.R.layout.simple_spinner_dropdown_item);
-        
         // Set up the action bar to show a dropdown list.
         final ActionBar actionBar = getActionBar();
         
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         
+        mFilename = null;
+        
+        mSpinnerAdapter = new TimeTableSpinnerAdapter(MasterActivity.this, actionBar.getSelectedNavigationIndex());
+        
         // Set up the dropdown list navigation in the action bar.
-        actionBar.setListNavigationCallbacks(spinnerAdapter, this);
+        actionBar.setListNavigationCallbacks(mSpinnerAdapter, this);
     }
     
     @Override
@@ -180,6 +180,8 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
     public void onDayChange(int day)
     {
         Log.d(TAG, "onDayChange: " + day);
+        
+        mSpinnerAdapter.setCurrentDay(day);
     }
     
     private void loadFragment(int position)
@@ -212,6 +214,8 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
         fragment.setArguments(bundle);
         
         getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+        
+        mSpinnerAdapter.setViewType(position);
     }
     
     public boolean onNavigationItemSelected(int position, long id)
@@ -219,7 +223,7 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
         // When the given dropdown item is selected, show its contents in the
         // container view.
         loadFragment(position);
-               
+        
         return true;
     }
 }
