@@ -18,8 +18,8 @@
 <manifest
     package="com.lugia.timetable"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:versionCode="1"
-    android:versionName="0.0.1 alpha 1" 
+    android:versionCode="2"
+    android:versionName="0.0.2 alpha 2"
     android:installLocation="internalOnly">
 
     <uses-sdk
