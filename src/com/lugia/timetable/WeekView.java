@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -468,6 +469,42 @@ public class WeekView extends View
             Log.d(TAG, "onSingleTapConfirm");
             
             mScrolling = false;
+            
+            // don't handle event if is tapping on header or time cell
+            if (e.getY() <= mHeaderHeight || e.getX() <= mTimeGridWidth)
+                return true;
+            
+            // try to figure out where user click
+            int value = (int)((mScrollY - mHeaderHeight + e.getY()) / mCellHeight);
+            int day = (int)((e.getX() - mTimeGridWidth) / mDayGridWidth) + 1;
+            
+            Log.d(TAG, "x = " + e.getX() + ", DAY = " + day);
+            
+            // TODO: some hack
+            value = value + 8;
+            
+            for (Subject subject : mSubjectList)
+            {
+                for (Schedule schedule : subject.getSchedules())
+                {
+                    if (schedule.getDay() != day)
+                        continue;
+                    
+                    if (value >= schedule.getTime() && value <= schedule.getTime() + schedule.getLength() - 1)
+                    {
+                        Log.d(TAG, subject.getSubjectCode() + " - " + subject.getSubjectDescription());
+                        
+                        Intent intent = new Intent(mContext, SubjectDetailActivity.class);
+                        
+                        intent.putExtra("subjectCode", subject.getSubjectCode());
+                        
+                        if (mFilename != null)
+                            intent.putExtra(MasterActivity.EXTRA_FILE_NAME, mFilename);
+                        
+                        mContext.startActivity(intent);
+                    }
+                }
+            }
             
             return true;
         }
