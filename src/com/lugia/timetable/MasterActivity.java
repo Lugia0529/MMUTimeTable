@@ -20,6 +20,7 @@ import android.app.ActionBar;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -60,6 +61,9 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_master);
+        
+        // Set up preferences value of this app if we run it on first time
+        PreferenceManager.setDefaultValues(MasterActivity.this, R.xml.setting_preference, false);
         
         // Set up the action bar to show a dropdown list.
         final ActionBar actionBar = getActionBar();
@@ -170,6 +174,14 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
         {
             Intent intent = new Intent(MasterActivity.this, LoginActivity.class);
             startActivityForResult(intent, REQUEST_CODE_DOWNLOAD_DATA);
+            
+            return true;
+        }
+        
+        if (item.getItemId() == R.id.action_settings)
+        {
+            Intent intent = new Intent(MasterActivity.this, SettingActivity.class);
+            startActivity(intent);
             
             return true;
         }

@@ -69,6 +69,33 @@
         <item>10PM</item>
     </string-array>
     
+    <string-array name="full_time_string">
+        <item>12AM</item>
+        <item>1AM</item>
+        <item>2AM</item>
+        <item>3AM</item>
+        <item>4AM</item>
+        <item>5AM</item>
+        <item>6AM</item>
+        <item>7AM</item>
+        <item>8AM</item>
+        <item>9AM</item>
+        <item>10AM</item>
+        <item>11AM</item>
+        <item>12PM</item>
+        <item>1PM</item>
+        <item>2PM</item>
+        <item>3PM</item>
+        <item>4PM</item>
+        <item>5PM</item>
+        <item>6PM</item>
+        <item>7PM</item>
+        <item>8PM</item>
+        <item>9PM</item>
+        <item>10PM</item>
+        <item>11PM</item>
+    </string-array>
+    
     <string-array name="day_string">
         <item>SUN</item>
         <item>MON</item>
@@ -97,5 +124,33 @@
     <string name="title_activity_subject_detail">Subject Detail</string>
     <string name="title_activity_master">Time Table</string>
     <string name="title_activity_login">Download Course Data</string>
-
+    <string name="title_activity_setting">Settings</string>
+    
+    <string name="preference_notification_title">Notification</string>
+    <string name="preference_notify_before_title">Notify before</string>
+    
+    <string-array name="preference_notify_before_entries">
+        <item>5 minutes</item>
+        <item>10 minutes</item>
+        <item>15 minutes</item>
+        <item>20 minutes</item>
+        <item>25 minutes</item>
+        <item>30 minutes</item>
+        <item>45 minutes</item>
+        <item>1 hours</item>
+        <item>2 hours</item>
+    </string-array>
+    
+    <string-array name="preference_notify_before_values">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>25</item>
+        <item>30</item>
+        <item>45</item>
+        <item>60</item>
+        <item>120</item>
+    </string-array>
+    
 </resources>
