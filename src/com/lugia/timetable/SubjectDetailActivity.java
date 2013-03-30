@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -33,6 +34,7 @@ import android.widget.Toast;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 
 public class SubjectDetailActivity extends Activity
 {
@@ -141,6 +143,25 @@ public class SubjectDetailActivity extends Activity
         }
         
         createTimeTableList();
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        if (item.getItemId() == android.R.id.home)
+        {
+            // This is called when the Home (Up) button is pressed in the Action Bar.
+            Intent intent = new Intent(this, MasterActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            
+            startActivity(intent);
+            
+            finish();
+            
+            return true;
+        }
+        
+        return super.onOptionsItemSelected(item);
     }
     
     private void createTimeTableList()
