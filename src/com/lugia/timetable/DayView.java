@@ -47,56 +47,59 @@ import android.widget.OverScroller;
 public class DayView extends View
 {
     private Context mContext;
-    private SubjectList mSubjectList;
-    private Resources mResources;
-    private Rect mTextBound;
-    
-    private OnDayChangeListener mDayChangeListener = null;
-    
     private Handler mHandler;
+    private Resources mResources;
     private OverScroller mScroller;
     private GestureDetector mGestureDetector;
-    
-    private final ContinueScroll mContinueScroll = new ContinueScroll();
-    private final ContinueSwitch mContinueSwitch = new ContinueSwitch();
     
     private Paint mTimePaint;
     private Paint mSubjectPaint;
     private Paint mLinePaint;
     private Paint mBackgroundPaint;
     
-    private int mCurrentDay;
+    private Rect mTextBound;
     
-    private int mGridLineColor;
-    private int mTimeBackgroundColor;
+    private SubjectList mSubjectList;
+    private ArrayList<SubjectBitmapCache> mBitmapCache;
+    
+    private OnDayChangeListener mDayChangeListener = null;
+    
+    private final ContinueScroll mContinueScroll = new ContinueScroll();
+    private final ContinueSwitch mContinueSwitch = new ContinueSwitch();
     
     private int mWidth;
     private int mHeight;
     private int mActualHeight;
-    private int mTimeGridWidth;
+    
+    private int mTimeCellWidth;
+    private int mTextCellWidth;
     private int mCellHeight;
+    private int mTextHeight;
     
-    /**
-     * Use to handle time diff for day switching animation
-     */
-    private long mLastTimeMillies = 0;
+    private int mCurrentDay;
     
-    private final int SWIPE_PAGE_MIN_DISTANCE;
-    private final int SWIPE_MIN_VELOCITY;
-    private final int SWIPE_OVERFLING_DISTANCE;
+    private int mGridLineColor;
+    private int mTimeBackgroundColor;
     
     private int mScrollMode;
     private int mSwitchMode;
     
     private float mScrollX;
     private float mScrollY;
-    private float mScaleFactor;
     
     private boolean mScrolling;
     
-    private String mFilename;
+    /**
+     * Use to handle time diff for day switching animation
+     */
+    private long mLastTimeMillies = 0;
     
+    private String mFilename;
     private String[] mTimeStrings;
+    
+    private final int SWIPE_PAGE_MIN_DISTANCE;
+    private final int SWIPE_MIN_VELOCITY;
+    private final int SWIPE_OVERFLING_DISTANCE;
     
     public static final int SUNDAY    = 0;
     public static final int MONDAY    = 1;
@@ -106,13 +109,6 @@ public class DayView extends View
     public static final int FRIDAY    = 5;
     public static final int SATURDAY  = 6;
     
-    public static final int TEXT_PADDING = 6;
-    
-    /**
-     * transition duration when user switch day
-     */
-    public static final float DAY_SWITCH_DURATION = 300f;
-    
     public static final int SCROLL_MODE_NONE       = 1 << 0;
     public static final int SCROLL_MODE_VERTICAL   = 1 << 1;
     public static final int SCROLL_MODE_HORIZONTAL = 1 << 2;
@@ -121,32 +117,31 @@ public class DayView extends View
     public static final int SWITCH_MODE_NONE =  0;
     public static final int SWITCH_MODE_NEXT =  1;
     
+    public static final int TEXT_PADDING = 6;
+    
+    /**
+     * transition duration when user switch day
+     */
+    public static final float DAY_SWITCH_DURATION = 300f;
+    
     private static final String TAG = "DayView";
     
     public DayView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
         
+        mScroller = new OverScroller(context);
+        mGestureDetector = new GestureDetector(context, new GestureListener());
+        mBitmapCache = new ArrayList<SubjectBitmapCache>();
+        mTextBound = new Rect();
+        
         final ViewConfiguration vc = ViewConfiguration.get(context);
         
-        SWIPE_PAGE_MIN_DISTANCE   = vc.getScaledPagingTouchSlop();
-        SWIPE_MIN_VELOCITY        = vc.getScaledMinimumFlingVelocity();
-        SWIPE_OVERFLING_DISTANCE  = vc.getScaledOverflingDistance();
+        SWIPE_PAGE_MIN_DISTANCE  = vc.getScaledPagingTouchSlop();
+        SWIPE_MIN_VELOCITY       = vc.getScaledMinimumFlingVelocity();
+        SWIPE_OVERFLING_DISTANCE = vc.getScaledOverflingDistance();
         
-        init(context);
-    }
-    
-    @Override
-    protected void onAttachedToWindow()
-    {
-        if (mHandler == null)
-            mHandler = getHandler();
-    }
-    
-    private void init(Context context)
-    {
         mContext = context;
-        
         mResources = context.getResources();
         
         mGridLineColor       = mResources.getColor(R.color.timetable_grid_line_color);
@@ -154,12 +149,13 @@ public class DayView extends View
         
         mTimeStrings = mResources.getStringArray(R.array.time_string);
         
-        mScrollMode = SCROLL_MODE_NONE;
-        mSwitchMode = SWITCH_MODE_NONE;
-        
         mScrollX = 0;
         mScrollY = 0;
-        mScaleFactor = 1;
+        
+        mCellHeight = 100;
+        
+        mScrollMode = SCROLL_MODE_NONE;
+        mSwitchMode = SWITCH_MODE_NONE;
         
         mScrolling = false;
         
@@ -174,11 +170,6 @@ public class DayView extends View
             default:
                 mCurrentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1;
         }
-        
-        mScroller = new OverScroller(context);
-        mGestureDetector = new GestureDetector(context, new GestureListener());
-        
-        mTextBound = new Rect();
         
         mTimePaint = new Paint();
         mTimePaint.setAntiAlias(true);
@@ -206,24 +197,33 @@ public class DayView extends View
     }
     
     @Override
+    protected void onAttachedToWindow()
+    {
+        if (mHandler == null)
+            mHandler = getHandler();
+    }
+    
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
         mWidth = MeasureSpec.getSize(widthMeasureSpec);
         mHeight = MeasureSpec.getSize(heightMeasureSpec);
         
         // measure text dimension of time text
-        mTimeGridWidth = (int)mTimePaint.measureText("XX XX") + 6;
+        mTimeCellWidth = (int)mTimePaint.measureText("XX XX") + 6;
+        mTextCellWidth = mWidth - mTimeCellWidth;
         
-        setMeasuredDimension(mWidth, mHeight);
+        // measure the common text height
+        mTimePaint.getTextBounds("X", 0, 1, mTextBound);
+        mTextHeight = mTextBound.height();
         
-        remeasure();
-    }
-    
-    private void remeasure()
-    {
-        mCellHeight = (int)(100 * mScaleFactor);
         mActualHeight = mCellHeight * mTimeStrings.length;
         
+        setMeasuredDimension(mWidth, mHeight);
+    }
+    
+    private void validateScrollPosition()
+    {
         // check for scroll position
         if (mScrollY < 0)
             mScrollY = 0;
@@ -265,7 +265,15 @@ public class DayView extends View
         canvas.translate(-mScrollX, -mScrollY);
         
         drawTimeAndGridLine(canvas);
-        drawSubject(canvas, mCurrentDay);
+        
+        // create bitmap cache of each subject if it is empty
+        if (mBitmapCache.isEmpty())
+            createSubjectBitmapCache();
+        
+        // only draw bitmap cache of current day
+        for (SubjectBitmapCache cache : mBitmapCache)
+            if (cache.getDay() == mCurrentDay)
+                canvas.drawBitmap(cache.getBitmap(), cache.getX(), cache.getY(), null);
         
         canvas.restore();
         
@@ -274,17 +282,17 @@ public class DayView extends View
         {
             canvas.save();
             
-            if (mScrollX < 0)
-                canvas.translate(-(mWidth + mScrollX), -mScrollY);
-            else
-                canvas.translate(mWidth - mScrollX, -mScrollY);
+            // find the day we need to draw and the X translation
+            int day = mScrollX < 0 ? mCurrentDay - 1 : mCurrentDay + 1;
+            float translateX = mScrollX < 0 ? -(mWidth + mScrollX) : (mWidth - mScrollX);
+
+            canvas.translate(translateX, -mScrollY);
             
             drawTimeAndGridLine(canvas);
             
-            if (mScrollX < 0)
-                drawSubject(canvas, mCurrentDay - 1);
-            else
-                drawSubject(canvas, mCurrentDay + 1);
+            for (SubjectBitmapCache cache : mBitmapCache)
+                if (cache.getDay() == day)
+                    canvas.drawBitmap(cache.getBitmap(), cache.getX(), cache.getY(), null);
             
             canvas.restore();
         }
@@ -292,31 +300,27 @@ public class DayView extends View
     
     private void drawTimeAndGridLine(Canvas canvas)
     {
-     // time background
+        // time background
         mBackgroundPaint.setColor(mTimeBackgroundColor);
-        canvas.drawRect(0, 0, mTimeGridWidth, mActualHeight, mBackgroundPaint);
+        canvas.drawRect(0, 0, mTimeCellWidth, mActualHeight, mBackgroundPaint);
         
         // vertical line
-        canvas.drawLine(mTimeGridWidth, 0, mTimeGridWidth, mActualHeight, mLinePaint);
+        canvas.drawLine(mTimeCellWidth, 0, mTimeCellWidth, mActualHeight, mLinePaint);
+        
+        int textX = (mTimeCellWidth / 2);
         
         // row line
         for (int i = 0; i < mTimeStrings.length; i++)
         {
             int lineY = mCellHeight * (i + 1);
-            
-            mTimePaint.getTextBounds(mTimeStrings[i], 0, mTimeStrings[i].length(), mTextBound);
-            
-            int textHeight = mTextBound.height();
-            
-            int textX = (mTimeGridWidth / 2);
-            int textY = (mCellHeight / 2) + (textHeight / 2) + lineY - mCellHeight;
+            int textY = (mCellHeight / 2) + (mTextHeight / 2) + lineY - mCellHeight;
             
             canvas.drawLine(0, lineY, mWidth, lineY, mLinePaint);
             canvas.drawText(mTimeStrings[i], textX, textY, mTimePaint);
         }
     }
     
-    private void drawSubject(Canvas canvas, int day)
+    private void createSubjectBitmapCache()
     {
         if (mSubjectList == null)
             return;
@@ -325,134 +329,109 @@ public class DayView extends View
         {
             Subject subject = mSubjectList.get(i);
             
-            for (Schedule time : subject.getSchedules())
+            for (Schedule schedule : subject.getSchedules())
             {
-                if (time.getDay() == day)
-                {
-                    int hour   = time.getTime() - 8;
-                    int length = time.getLength();
-                    int height = length * mCellHeight;
-                    
-                    String code        = subject.getSubjectCode();
-                    String description = subject.getSubjectDescription();
-                    String room        = time.getRoom();
-                    
-                    String section = "";
-                    
-                    if (time.getSection() == Schedule.LECTURE_SECTION)
-                        section = subject.getLectureSection();
-                    else
-                        section = subject.getTutorialSection();
-                    
-                    // eliminate lines
-                    mBackgroundPaint.setColor(Color.WHITE);
-                    canvas.drawRect(mTimeGridWidth + 1, (mCellHeight * hour) + 1, mWidth, mCellHeight * (hour + length) - 1, mBackgroundPaint);
-                    
-                    // draw the background
-                    mBackgroundPaint.setColor(subject.getColor());
-                    canvas.drawRect(mTimeGridWidth + 3, (mCellHeight * hour) + 3, mWidth - 3, mCellHeight * (hour + length) - 3, mBackgroundPaint);
-                    
-                    Bitmap bitmap = createSubjectTextBitmap(mWidth - mTimeGridWidth - 6, mCellHeight * length - 6, code, description, section, room);
-                    canvas.drawBitmap(bitmap, mTimeGridWidth + 3, (mCellHeight * hour) + ((mCellHeight * length) / 2) - (bitmap.getHeight() / 2), null);
-                }
+                String code        = subject.getSubjectCode();
+                String description = subject.getSubjectDescription();
+                String room        = schedule.getRoom();
+                String section     = schedule.getSection() == Schedule.LECTURE_SECTION ? subject.getLectureSection() : subject.getTutorialSection();
+                
+                int day    = schedule.getDay();
+                int hour   = schedule.getTime() - 8;
+                int length = schedule.getLength();
+                
+                int x = mTimeCellWidth + 1;
+                int y = (mCellHeight * hour) + 1;
+                
+                int width  = mTextCellWidth - 1;
+                int height = (length * mCellHeight) - 1;
+                
+                SubjectBitmapCache bitmapCache = new SubjectBitmapCache(day, x, y, width, height);
+                Canvas c = new Canvas(bitmapCache.getBitmap());
+                
+                // eliminate lines
+                mBackgroundPaint.setColor(Color.WHITE);
+                c.drawRect(0, 0, width, height, mBackgroundPaint);
+                
+                // draw the background
+                mBackgroundPaint.setColor(subject.getColor());
+                c.drawRect(3, 3, width - 3, height - 3, mBackgroundPaint);
+                
+                // draw the text
+                Bitmap bitmap = createSubjectTextBitmap(width - 6, height - 6, code, description, section, room);
+                c.drawBitmap(bitmap, 0, (height / 2) - (bitmap.getHeight() / 2), null);
+                
+                mBitmapCache.add(bitmapCache);
             }
         }
     }
     
     private Bitmap createSubjectTextBitmap(int maxWidth, int maxHeight, String code, String description, String section, String room)
     {
-        // TODO: we may not only handle description, we can handle more...
-        ArrayList<String> descriptionTextList = new ArrayList<String>();
+        /*    Code
+         * Description
+         *   Section
+         *    Room
+         */
         
-        mSubjectPaint.getTextBounds(code, 0, code.length(), mTextBound);
-        int codeHeight = mTextBound.height();
-        
-        mSubjectPaint.getTextBounds(section, 0, section.length(), mTextBound);
-        int sectionHeight = mTextBound.height();
-        
-        mSubjectPaint.getTextBounds(room, 0, room.length(), mTextBound);
-        int roomHeight = mTextBound.height();
-        
-        float a[] = new float[description.length()];
-        mSubjectPaint.getTextWidths(description, a);
+        // use to calculate description text width, so we can wrap it to next line if it is too long
+        float textWidthArray[] = new float[description.length()];
+        mSubjectPaint.getTextWidths(description, textWidthArray);
         
         int textWidth = 0;
         int startPos = 0;
         int spacePos = 0;
         
-        for (int i = 0; i < a.length; i++)
+        ArrayList<String> textList = new ArrayList<String>();
+        
+        textList.add(code);
+        
+        for (int pos = 0; pos < textWidthArray.length; pos++)
         {
-            textWidth += a[i];
+            textWidth += textWidthArray[pos];
             
-            if (description.charAt(i) == ' ')
-            {
-                spacePos = i;
-                //Log.d(TAG, "space: " + i);
-            }
+            if (description.charAt(pos) == ' ')
+                spacePos = pos;
             
             if (textWidth >= maxWidth)
             {
                 if (spacePos > startPos)
                 {
-                    descriptionTextList.add(description.substring(startPos, spacePos));
+                    textList.add(description.substring(startPos, spacePos));
                     
                     startPos = spacePos + 1;
-                    i = spacePos;
+                    pos = spacePos;
                 }
                 else
                 {
-                    descriptionTextList.add(description.substring(startPos, i));
+                    textList.add(description.substring(startPos, pos));
                     
-                    startPos = i;
+                    startPos = pos;
                 }
                 
                 textWidth = 0;
             }
             
-            if (i + 1 == a.length)
-            {
-                descriptionTextList.add(description.substring(startPos));
-            }
+            if (pos + 1 == textWidthArray.length)
+                textList.add(description.substring(startPos));
         }
         
-        int reqHeight = codeHeight + sectionHeight + roomHeight + (TEXT_PADDING + TEXT_PADDING);
+        textList.add(section);
+        textList.add(room);
         
-        // try to see the result
-        for (String str : descriptionTextList)
-        {
-            mSubjectPaint.getTextBounds(str, 0, str.length(), mTextBound);
-            reqHeight += mTextBound.height() + TEXT_PADDING;
-        }
+        int requireHeight = (mTextHeight * textList.size()) + (TEXT_PADDING * (textList.size() - 1));
         
-        Bitmap bitmap = Bitmap.createBitmap(maxWidth, reqHeight, Bitmap.Config.ARGB_8888);
-        
-        int xPos = maxWidth / 2;
-        
+        Bitmap bitmap = Bitmap.createBitmap(maxWidth, requireHeight, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         
-        // For debugging purpose, draw the bound of this bitmap
-        //canvas.drawRect(0, 0, maxWidth, reqHeight, mLinePaint);
+        int xPos = maxWidth / 2;
+        int yPos = mTextHeight;
         
-        int yPos = codeHeight;
-        
-        // draw the text
-        canvas.drawText(code, xPos, yPos, mSubjectPaint);
-        
-        for (String str : descriptionTextList)
+        for (String str : textList)
         {
-            mSubjectPaint.getTextBounds(code, 0, code.length(), mTextBound);
-            yPos += mTextBound.height() + TEXT_PADDING;
-            
             canvas.drawText(str, xPos, yPos, mSubjectPaint);
+            yPos += mTextHeight + TEXT_PADDING;
         }
-        
-        yPos += sectionHeight + TEXT_PADDING;
-        
-        canvas.drawText(section, xPos, yPos, mSubjectPaint);
-        
-        yPos += roomHeight + TEXT_PADDING;
-        
-        canvas.drawText(room, xPos, yPos, mSubjectPaint);
         
         return bitmap;
     }
@@ -463,12 +442,15 @@ public class DayView extends View
     
     public void setFilename(final String filename)
     {
-        this.mFilename = filename;
+        boolean fileLoaded = filename != null ? loadFile(filename) : loadFileFromSystem();
         
-        if (filename != null)
-            loadFile(filename);
-        else
-            loadFileFromSystem();
+        // exit method if we are failed to load file
+        if (!fileLoaded)
+            return;
+        
+        this.mFilename = filename;
+
+        mBitmapCache.clear();
     }
     
     private boolean loadFileFromSystem()
@@ -502,6 +484,7 @@ public class DayView extends View
             return false;
         }
         
+        // file is loaded successfully
         return true;
     }
     
@@ -539,7 +522,7 @@ public class DayView extends View
             return false;
         }
         
-        // load is complete successfully
+        // file is loaded successfully
         return true;
     }
     
@@ -559,7 +542,7 @@ public class DayView extends View
             if (mScrollX != 0)
             {
                 // check the direction of we are going to switching to
-                Boolean condition = (Math.abs(mScrollX) > mTimeGridWidth) ^ (mScrollX > 0);
+                Boolean condition = (Math.abs(mScrollX) > mTimeCellWidth) ^ (mScrollX > 0);
                 
                 mSwitchMode = condition ? SWITCH_MODE_PREV : SWITCH_MODE_NEXT;
                 
@@ -592,11 +575,12 @@ public class DayView extends View
             
             mScrolling = false;
             
-            // try to figure out where user click
-            int value = (int)((mScrollY + e.getY()) / mCellHeight);
+            // don't handle event if is tapping on time cell
+            if (e.getX() <= mTimeCellWidth)
+                return true;
             
-            // TODO: some hack
-            value = value + 8;
+            // try to figure out where user click
+            int hour = (int)((mScrollY + e.getY()) / mCellHeight) + 8;
             
             for (Subject subject : mSubjectList)
             {
@@ -605,10 +589,8 @@ public class DayView extends View
                     if (schedule.getDay() != mCurrentDay)
                         continue;
                     
-                    if (value >= schedule.getTime() && value <= schedule.getTime() + schedule.getLength())
+                    if (hour >= schedule.getTime() && hour <= schedule.getTime() + schedule.getLength() - 1)
                     {
-                        Log.d(TAG, subject.getSubjectCode() + " - " + subject.getSubjectDescription());
-                        
                         Intent intent = new Intent(mContext, SubjectDetailActivity.class);
                         
                         intent.putExtra("subjectCode", subject.getSubjectCode());
@@ -653,7 +635,7 @@ public class DayView extends View
                     mScrollX = 0;
             }
             
-            remeasure();
+            validateScrollPosition();
             invalidate();
             
             return true;
@@ -708,8 +690,6 @@ public class DayView extends View
             
             mScrollY = mScroller.getCurrY();
             
-            Log.d(TAG, "Flinging");
-            
             mHandler.post(this);
             invalidate();
         }
@@ -724,7 +704,7 @@ public class DayView extends View
             
             // check for time different between last and current execution of this thread
             // so we can know how much to scroll the view, this help us maintain a constant
-            // time between day switching animation.
+            // speed between day switching animation.
             long diff = SystemClock.elapsedRealtime() - mLastTimeMillies;
             mLastTimeMillies = SystemClock.elapsedRealtime();
             
@@ -748,8 +728,6 @@ public class DayView extends View
             // day switch finish
             if (switchFinish)
             {
-                Log.d(TAG, "Switch finish");
-                
                 if (Math.abs(mScrollX) >= mWidth)
                 {
                     if (mSwitchMode == SWITCH_MODE_PREV)

@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.Intent;
@@ -44,53 +45,55 @@ import android.widget.OverScroller;
 public class WeekView extends View
 {
     private Context mContext;
-    private SubjectList mSubjectList;
-    private Resources mResources;
-    private Rect mTextBound;
-    
     private Handler mHandler;
+    private Resources mResources;
     private OverScroller mScroller;
     private GestureDetector mGestureDetector;
-    
-    private final ContinueScroll mContinueScroll = new ContinueScroll();
     
     private Paint mTimePaint;
     private Paint mSubjectPaint;
     private Paint mLinePaint;
     private Paint mBackgroundPaint;
+
+    private Rect mTextBound;
     
-    private int mGridLineColor;
-    private int mTimeBackgroundColor;
+    private SubjectList mSubjectList;
+    private ArrayList<SubjectBitmapCache> mBitmapCache;
+    
+    private final ContinueScroll mContinueScroll = new ContinueScroll();
     
     private int mWidth;
     private int mHeight;
     private int mActualHeight;
-    private int mTimeGridWidth;
-    private int mDayGridWidth;
+    
+    private int mTimeCellWidth;
+    private int mDayCellWidth;
     private int mHeaderHeight;
     private int mCellHeight;
+    private int mTextHeight;
+    
+    private int mGridLineColor;
+    private int mTimeBackgroundColor;
+    
+    private int mScrollMode;
+    
+    private float mScrollY;
+
+    private boolean mScrolling;
+    
+    private String mFilename;
+    private String[] mTimeStrings;
+    private String[] mDayStrings;
     
     private final int SWIPE_PAGE_MIN_DISTANCE;
     private final int SWIPE_MIN_VELOCITY;
     private final int SWIPE_OVERFLING_DISTANCE;
     
-    private int mScrollMode;
-    
-    private float mScrollY;
-    private float mScaleFactor;
-    
-    private boolean mScrolling;
-    
-    private String mFilename;
-    
-    private String[] mTimeStrings;
-    private String[] mDayStrings;
-    
-    public static final int TEXT_PADDING = 6;
-    
     public static final int SCROLL_MODE_NONE       = 1 << 0;
     public static final int SCROLL_MODE_VERTICAL   = 1 << 1;
     public static final int SCROLL_MODE_HORIZONTAL = 1 << 2;
+    
+    public static final int TEXT_PADDING = 6;
     
     private static final String TAG = "WeekView";
     
@@ -98,46 +101,33 @@ public class WeekView extends View
     {
         super(context, attrs);
         
+        mScroller = new OverScroller(context);
+        mGestureDetector = new GestureDetector(context, new GestureListener());
+        mBitmapCache = new ArrayList<SubjectBitmapCache>();
+        mTextBound = new Rect();
+        
         final ViewConfiguration vc = ViewConfiguration.get(context);
         
-        SWIPE_PAGE_MIN_DISTANCE   = vc.getScaledPagingTouchSlop();
-        SWIPE_MIN_VELOCITY        = vc.getScaledMinimumFlingVelocity();
-        SWIPE_OVERFLING_DISTANCE  = vc.getScaledOverflingDistance();
+        SWIPE_PAGE_MIN_DISTANCE  = vc.getScaledPagingTouchSlop();
+        SWIPE_MIN_VELOCITY       = vc.getScaledMinimumFlingVelocity();
+        SWIPE_OVERFLING_DISTANCE = vc.getScaledOverflingDistance();
         
-        init(context);
-    }
-    
-    @Override
-    protected void onAttachedToWindow()
-    {
-        if (mHandler == null)
-            mHandler = getHandler();
-    }
-    
-    private void init(Context context)
-    {
         mContext = context;
-        
         mResources = context.getResources();
         
         mGridLineColor       = mResources.getColor(R.color.timetable_grid_line_color);
         mTimeBackgroundColor = mResources.getColor(R.color.timetable_time_background_color);
         
         mTimeStrings = mResources.getStringArray(R.array.time_string);
-        mDayStrings = mResources.getStringArray(R.array.day_string);
+        mDayStrings  = mResources.getStringArray(R.array.day_string);
         
-        mScrollMode = SCROLL_MODE_NONE;
         mScrollY = 0;
-        mScaleFactor = 1;
-        
-        mScrolling = false;
         
         mCellHeight = 100;
         
-        mScroller = new OverScroller(context);
-        mGestureDetector = new GestureDetector(context, new GestureListener());
+        mScrollMode = SCROLL_MODE_NONE;
         
-        mTextBound = new Rect();
+        mScrolling = false;
         
         mTimePaint = new Paint();
         mTimePaint.setAntiAlias(true);
@@ -164,17 +154,11 @@ public class WeekView extends View
         mBackgroundPaint.setStyle(Style.FILL);
     }
     
-    private void remeasure()
+    @Override
+    protected void onAttachedToWindow()
     {
-        mCellHeight = (int)(100 * mScaleFactor);
-        mActualHeight = mCellHeight * mTimeStrings.length + mHeaderHeight;
-        
-        // check for scroll position
-        if (mScrollY < 0)
-            mScrollY = 0;
-        
-        if (mScrollY + mHeight > mActualHeight)
-            mScrollY = mActualHeight - mHeight;
+        if (mHandler == null)
+            mHandler = getHandler();
     }
     
     @Override
@@ -184,63 +168,54 @@ public class WeekView extends View
         mHeight = MeasureSpec.getSize(heightMeasureSpec);
         
         // measure the dimension of time text
-        mTimeGridWidth = (int)mTimePaint.measureText("XX XX") + 6;
+        mTimeCellWidth = (int)mTimePaint.measureText("XX XX") + 6;
+        mDayCellWidth = (int)(mWidth - mTimeCellWidth) / 5;
         
-        // TODO: this is not a good way to know the actual day width
-        mDayGridWidth = (int)(mWidth - mTimeGridWidth) / 5;
+        // measure the common text height
+        mTimePaint.getTextBounds("X", 0, 1, mTextBound);
+        mTextHeight = mTextBound.height();
         
-        // measure the dimension of day text
-        mTimePaint.getTextBounds("XXX", 0, 3, mTextBound);
+        mHeaderHeight = mTextHeight + 10;
         
-        mHeaderHeight = mTextBound.height() + 10;
+        mActualHeight = mCellHeight * mTimeStrings.length + mHeaderHeight;
         
         setMeasuredDimension(mWidth, mHeight);
-        
-        remeasure();
     }
+    
+    private void validateScrollPosition()
+    {
+        if (mScrollY < 0)
+            mScrollY = 0;
+        
+        if (mScrollY + mHeight > mActualHeight)
+            mScrollY = mActualHeight - mHeight;
+    }
+    
+    // ======================================================
+    // UI Drawing
+    // ======================================================
     
     @Override
     protected void onDraw(Canvas canvas)
     {
         canvas.drawColor(Color.WHITE);
         
-        // draw the header first
-        drawWeekHeader(canvas);
-        
         canvas.save();
         canvas.translate(0, -mScrollY + mHeaderHeight);
         
-        // time background
-        mBackgroundPaint.setColor(mTimeBackgroundColor);
-        canvas.drawRect(0, 0, mTimeGridWidth, mActualHeight, mBackgroundPaint);
+        drawTimeAndGridLine(canvas);
         
-        // vertical line
-        canvas.drawLine(mTimeGridWidth, 0, mTimeGridWidth, mActualHeight, mLinePaint);
+        // create bitmap cache of each subject if it is empty
+        if (mBitmapCache.isEmpty())
+            createSubjectBitmapCache();
         
-        // day line
-        for (int i = 1; i <= 4; i++)
-            canvas.drawLine(mTimeGridWidth + (mDayGridWidth * i), 0, mTimeGridWidth + (mDayGridWidth * i), mActualHeight, mLinePaint);
-        
-        // row line
-        for (int i = 0; i < mTimeStrings.length; i++)
-        {
-            int lineY = mCellHeight * (i + 1);
-            
-            mTimePaint.getTextBounds(mTimeStrings[i], 0, mTimeStrings[i].length(), mTextBound);
-            
-            int textHeight = mTextBound.height();
-            
-            int textX = (mTimeGridWidth / 2);
-            int textY = (mCellHeight / 2) + (textHeight / 2) + lineY - mCellHeight;
-            
-            canvas.drawLine(0, lineY, mWidth, lineY, mLinePaint);
-            canvas.drawText(mTimeStrings[i], textX, textY, mTimePaint);
-        }
-        
-        drawSubject(canvas);
+        // in week view, we draw all of the bitmap in the bitmap cache
+        for (SubjectBitmapCache cache : mBitmapCache)
+            canvas.drawBitmap(cache.getBitmap(), cache.getX(), cache.getY(), null);
         
         canvas.restore();
         
+        // draw the week header at last so the time table wont cover it
         drawWeekHeader(canvas);
     }
     
@@ -253,12 +228,42 @@ public class WeekView extends View
         
         for (int i = 0; i < 5; i++)
         {
-            int x = mTimeGridWidth + (mDayGridWidth * i) + (mDayGridWidth / 2);
+            int x = mTimeCellWidth + (mDayCellWidth * i) + (mDayCellWidth / 2);
             canvas.drawText(mDayStrings[i + 1], x, mHeaderHeight - 5, mTimePaint);
         }
     }
     
-    private void drawSubject(Canvas canvas)
+    private void drawTimeAndGridLine(Canvas canvas)
+    {
+        // time background
+        mBackgroundPaint.setColor(mTimeBackgroundColor);
+        canvas.drawRect(0, 0, mTimeCellWidth, mActualHeight, mBackgroundPaint);
+        
+        // vertical line
+        canvas.drawLine(mTimeCellWidth, 0, mTimeCellWidth, mActualHeight, mLinePaint);
+        
+        // day line
+        for (int i = 1; i <= 4; i++)
+            canvas.drawLine(mTimeCellWidth + (mDayCellWidth * i), 0, mTimeCellWidth + (mDayCellWidth * i), mActualHeight, mLinePaint);
+        
+        // row line
+        for (int i = 0; i < mTimeStrings.length; i++)
+        {
+            int lineY = mCellHeight * (i + 1);
+            
+            mTimePaint.getTextBounds(mTimeStrings[i], 0, mTimeStrings[i].length(), mTextBound);
+            
+            int textHeight = mTextBound.height();
+            
+            int textX = (mTimeCellWidth / 2);
+            int textY = (mCellHeight / 2) + (textHeight / 2) + lineY - mCellHeight;
+            
+            canvas.drawLine(0, lineY, mWidth, lineY, mLinePaint);
+            canvas.drawText(mTimeStrings[i], textX, textY, mTimePaint);
+        }
+    }
+    
+    private void createSubjectBitmapCache()
     {
         if (mSubjectList == null)
             return;
@@ -267,77 +272,61 @@ public class WeekView extends View
         {
             Subject subject = mSubjectList.get(i);
             
-            for (Schedule time : subject.getSchedules())
+            for (Schedule schedule : subject.getSchedules())
             {
-                int day    = time.getDay();
-                int hour   = time.getTime() - 8;
-                int length = time.getLength();
-                int height = length * mCellHeight;
-                
                 String code        = subject.getSubjectCode();
-                String description = subject.getSubjectDescription();
-                String room        = time.getRoom();
+                String room        = schedule.getRoom();
                 
-                String section = "";
+                int day    = schedule.getDay();
+                int hour   = schedule.getTime() - 8;
+                int length = schedule.getLength();
                 
-                if (time.getSection() == Schedule.LECTURE_SECTION)
-                    section = subject.getLectureSection();
-                else
-                    section = subject.getTutorialSection();
+                int x = mTimeCellWidth + (mDayCellWidth * (day - 1)) + 1;
+                int y = (mCellHeight * hour) + 1;
                 
-                int startX = mTimeGridWidth + (mDayGridWidth * (day - 1));
-                int startY = mCellHeight * hour;
-                int endX   = startX + mDayGridWidth;
-                int endY   = mCellHeight * (hour + length);
+                int width  = mDayCellWidth - 1;
+                int height = (length * mCellHeight) - 1;
+                
+                SubjectBitmapCache bitmapCache = new SubjectBitmapCache(day, x, y, width, height);
+                Canvas c = new Canvas(bitmapCache.getBitmap());
                 
                 // eliminate lines
                 mBackgroundPaint.setColor(Color.WHITE);
-                canvas.drawRect(startX + 1, startY + 1, endX, endY, mBackgroundPaint);
+                c.drawRect(0, 0, width, height, mBackgroundPaint);
                 
                 // draw the background
                 mBackgroundPaint.setColor(subject.getColor());
-                canvas.drawRect(startX + 3, startY + 3, endX - 2, endY - 2, mBackgroundPaint);
+                c.drawRect(3, 3, width - 3, height - 3, mBackgroundPaint);
                 
-                Bitmap bitmap = createSubjectTextBitmap(endX - startX - 5, endY - startY - 5, code, description, section, room);
-                canvas.drawBitmap(bitmap, startX + 3, (mCellHeight * hour) + ((mCellHeight * length) / 2) - (bitmap.getHeight() / 2), null);
+                // draw the text
+                Bitmap bitmap = createSubjectTextBitmap(width, height, code, room);
+                c.drawBitmap(bitmap, 0, (height / 2) - (bitmap.getHeight() / 2), null);
+                
+                mBitmapCache.add(bitmapCache);
             }
         }
     }
     
-    private Bitmap createSubjectTextBitmap(int maxWidth, int maxHeight, String code, String description, String section, String room)
+    private Bitmap createSubjectTextBitmap(int maxWidth, int maxHeight, String code, String room)
     {
-        mSubjectPaint.getTextBounds(code, 0, code.length(), mTextBound);
-        int codeHeight = mTextBound.height();
+        ArrayList<String> textList = new ArrayList<String>();
         
-        mSubjectPaint.getTextBounds(section, 0, section.length(), mTextBound);
-        int sectionHeight = mTextBound.height();
+        textList.add(code);
+        textList.add(room);
         
-        mSubjectPaint.getTextBounds(room, 0, room.length(), mTextBound);
-        int roomHeight = mTextBound.height();
+        int requireHeight = (mTextHeight * 2) + TEXT_PADDING;
         
-        int reqHeight = codeHeight + sectionHeight + roomHeight + (TEXT_PADDING + TEXT_PADDING);
-        
-        Bitmap bitmap = Bitmap.createBitmap(maxWidth, reqHeight, Bitmap.Config.ARGB_8888);
-        
-        int xPos = maxWidth / 2;
-        
+        Bitmap bitmap = Bitmap.createBitmap(maxWidth, requireHeight, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         
-        // For debugging purpose, draw the bound of this bitmap
-        //canvas.drawRect(0, 0, maxWidth, reqHeight, mLinePaint);
+        int xPos = maxWidth / 2;
+        int yPos = mTextHeight;
         
-        int yPos = codeHeight;
-        
-        // draw the text
-        canvas.drawText(code, xPos, yPos, mSubjectPaint);
-        
-        yPos += sectionHeight + TEXT_PADDING;
-        
-        canvas.drawText(section, xPos, yPos, mSubjectPaint);
-        
-        yPos += roomHeight + TEXT_PADDING;
-        
-        canvas.drawText(room, xPos, yPos, mSubjectPaint);
+        for (String str : textList)
+        {
+            canvas.drawText(str, xPos, yPos, mSubjectPaint);
+            yPos += mTextHeight + TEXT_PADDING;
+        }
         
         return bitmap;
     }
@@ -353,12 +342,15 @@ public class WeekView extends View
     
     public void setFilename(final String filename)
     {
+        boolean fileLoaded = filename != null ? loadFile(filename) : loadFileFromSystem();
+        
+        // exit method if we are failed to load file
+        if (!fileLoaded)
+            return;
+        
         this.mFilename = filename;
         
-        if (filename != null)
-            loadFile(filename);
-        else
-            loadFileFromSystem();
+        mBitmapCache.clear();
     }
     
     private boolean loadFileFromSystem()
@@ -471,17 +463,12 @@ public class WeekView extends View
             mScrolling = false;
             
             // don't handle event if is tapping on header or time cell
-            if (e.getY() <= mHeaderHeight || e.getX() <= mTimeGridWidth)
+            if (e.getY() <= mHeaderHeight || e.getX() <= mTimeCellWidth)
                 return true;
             
             // try to figure out where user click
-            int value = (int)((mScrollY - mHeaderHeight + e.getY()) / mCellHeight);
-            int day = (int)((e.getX() - mTimeGridWidth) / mDayGridWidth) + 1;
-            
-            Log.d(TAG, "x = " + e.getX() + ", DAY = " + day);
-            
-            // TODO: some hack
-            value = value + 8;
+            int hour = (int)((mScrollY - mHeaderHeight + e.getY()) / mCellHeight) + 8;
+            int day = (int)((e.getX() - mTimeCellWidth) / mDayCellWidth) + 1;
             
             for (Subject subject : mSubjectList)
             {
@@ -490,10 +477,8 @@ public class WeekView extends View
                     if (schedule.getDay() != day)
                         continue;
                     
-                    if (value >= schedule.getTime() && value <= schedule.getTime() + schedule.getLength() - 1)
+                    if (hour >= schedule.getTime() && hour <= schedule.getTime() + schedule.getLength() - 1)
                     {
-                        Log.d(TAG, subject.getSubjectCode() + " - " + subject.getSubjectDescription());
-                        
                         Intent intent = new Intent(mContext, SubjectDetailActivity.class);
                         
                         intent.putExtra("subjectCode", subject.getSubjectCode());
@@ -521,7 +506,7 @@ public class WeekView extends View
             if (mScrollMode == SCROLL_MODE_VERTICAL)
                 mScrollY += distanceY;
             
-            remeasure();
+            validateScrollPosition();
             invalidate();
             
             return true;
@@ -568,8 +553,6 @@ public class WeekView extends View
             }
             
             mScrollY = mScroller.getCurrY();
-            
-            Log.d(TAG, "Flinging");
             
             mHandler.post(this);
             invalidate();
