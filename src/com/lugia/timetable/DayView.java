@@ -593,7 +593,7 @@ public class DayView extends View
                     {
                         Intent intent = new Intent(mContext, SubjectDetailActivity.class);
                         
-                        intent.putExtra("subjectCode", subject.getSubjectCode());
+                        intent.putExtra(SubjectDetailActivity.EXTRA_SUBJECT_CODE, subject.getSubjectCode());
                         
                         if (mFilename != null)
                             intent.putExtra(MasterActivity.EXTRA_FILE_NAME, mFilename);

@@ -77,7 +77,7 @@ public class SubjectListFragment extends Fragment implements AdapterView.OnItemC
         
         Intent intent = new Intent(getActivity(), SubjectDetailActivity.class);
         
-        intent.putExtra("subjectCode", subject.getSubjectCode());
+        intent.putExtra(SubjectDetailActivity.EXTRA_SUBJECT_CODE, subject.getSubjectCode());
         
         if (fileName != null)
             intent.putExtra(MasterActivity.EXTRA_FILE_NAME, fileName);

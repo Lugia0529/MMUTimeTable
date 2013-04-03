@@ -56,6 +56,8 @@ public class SubjectDetailActivity extends Activity
     
     private LayoutInflater mLayoutInflater;
     
+    public static final String EXTRA_SUBJECT_CODE = "com.lugia.timetable.SubjectCode";
+    
     public static final String[] WEEKS = new String[]
     {
         "Sunday",
@@ -107,7 +109,7 @@ public class SubjectDetailActivity extends Activity
         else
             loadFileFromSystem();
         
-        String subjectCode = intentExtra.getString("subjectCode");
+        String subjectCode = intentExtra.getString(EXTRA_SUBJECT_CODE);
         
         mSubject = mSubjectList.findSubject(subjectCode);
         

@@ -31,9 +31,9 @@ import android.util.Log;
  */
 public class ReminderService extends IntentService
 {
-    public static final String EXTRA_SUBJECT_CODE = "subjectCode";
-    public static final String EXTRA_HEADER       = "header";
-    public static final String EXTRA_CONTENT      = "content";
+    public static final String EXTRA_SUBJECT_CODE = "com.lugia.timetable.SubjectCode";
+    public static final String EXTRA_HEADER       = "com.lugia.timetable.Header";
+    public static final String EXTRA_CONTENT      = "com.lugia.timetable.Content";
     
     public static final int NOTIFICATION_ID = 1;
     
@@ -56,7 +56,7 @@ public class ReminderService extends IntentService
         NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         
         Intent notificationIntent = new Intent(ReminderService.this, SubjectDetailActivity.class);
-        notificationIntent.putExtra("subjectCode", subjectCode);
+        notificationIntent.putExtra(SubjectDetailActivity.EXTRA_SUBJECT_CODE, subjectCode);
         
         PendingIntent pendingIntent = PendingIntent.getActivity(ReminderService.this, 0, notificationIntent, 0);
         

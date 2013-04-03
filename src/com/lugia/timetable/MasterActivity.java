@@ -43,7 +43,7 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
      */
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
     
-    public static final String EXTRA_FILE_NAME = "open_file";
+    public static final String EXTRA_FILE_NAME = "com.lugia.timetable.Filename";
     
     public static final int NAV_DAY  = 0;
     public static final int NAV_WEEK = 1;
