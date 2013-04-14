@@ -27,8 +27,22 @@
             android:defaultValue="false"
         />
         
-        <ListPreference
+        <RingtonePreference
             android:layout="?android:attr/preferenceLayoutChild"
+            android:key="preference_notify_sound"
+            android:title="@string/preference_notify_sound_title"
+            android:ringtoneType="notification"
+            android:defaultValue="content://settings/system/notification_sound"
+        />
+        
+        <CheckBoxPreference
+            android:layout="?android:attr/preferenceLayoutChild"
+            android:key="preference_notify_vibrate"
+            android:title="@string/preference_notify_vibrate_title"
+            android:defaultValue="false"
+        />
+        
+        <ListPreference
             android:key="preference_notify_before"
             android:title="@string/preference_notify_before_title"
             android:defaultValue="15"

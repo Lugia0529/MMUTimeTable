@@ -22,8 +22,10 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
@@ -66,10 +68,21 @@ public class ReminderService extends IntentService
                                                           .setContentTitle(header)
                                                           .setContentText(content)
                                                           .setContentIntent(pendingIntent)
-                                                          .setDefaults(Notification.DEFAULT_ALL)
                                                           .setAutoCancel(true)
                                                           .setWhen(System.currentTimeMillis())
                                                           .build();
+        
+        // always show the notification light
+        notification.defaults |= Notification.DEFAULT_LIGHTS;
+        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+        
+        // only vibrate when user enable it
+        if (SettingActivity.getBoolean(ReminderService.this, SettingActivity.KEY_NOTIFY_VIBRATE, false))
+            notification.defaults |= Notification.DEFAULT_VIBRATE;
+        
+        // set the notification sound
+        String soundUri = SettingActivity.getString(ReminderService.this, SettingActivity.KEY_NOTIFY_SOUND, "");
+        notification.sound = TextUtils.isEmpty(soundUri) ? null : Uri.parse(soundUri);
         
         manager.notify(NOTIFICATION_ID, notification);
         

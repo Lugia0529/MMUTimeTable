@@ -127,6 +127,8 @@
     <string name="title_activity_setting">Settings</string>
     
     <string name="preference_notification_title">Notification</string>
+    <string name="preference_notify_sound_title">Sound</string>
+    <string name="preference_notify_vibrate_title">Vibrate</string>
     <string name="preference_notify_before_title">Notify before</string>
     
     <string-array name="preference_notify_before_entries">

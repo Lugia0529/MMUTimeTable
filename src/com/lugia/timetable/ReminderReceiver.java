@@ -30,8 +30,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -58,9 +56,7 @@ public class ReminderReceiver extends BroadcastReceiver
             return;
         }
         
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        
-        boolean notificationEnabled = sharedPreferences.getBoolean(SettingActivity.KEY_NOTIFICATION, false);
+        boolean notificationEnabled = SettingActivity.getBoolean(context, SettingActivity.KEY_NOTIFICATION, false);
         
         // cancel all reminder if user didn't enable notification
         if (!notificationEnabled)
@@ -71,7 +67,7 @@ public class ReminderReceiver extends BroadcastReceiver
             return;
         }
         
-        int notifyBefore = Integer.parseInt(sharedPreferences.getString(SettingActivity.KEY_NOTIFY_BEFORE, "15"));
+        int notifyBefore = Integer.parseInt(SettingActivity.getString(context, SettingActivity.KEY_NOTIFY_BEFORE, "15"));
         
         registerReminder(context, notifyBefore);
     }
