@@ -1,5 +1,7 @@
 bin/
 gen/
 META-INF/
+.idea
 .settings
+TimeTable.iml
 Thumbs.db
