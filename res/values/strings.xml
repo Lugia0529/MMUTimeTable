@@ -42,7 +42,7 @@
     <string name="header_monday">Mon</string>
     <string name="header_tuesday">Tue</string>
     <string name="header_wednesday">Wed</string>
-    <string name="header_thusday">Thu</string>
+    <string name="header_thursday">Thu</string>
     <string name="header_friday">Fri</string>
     
     <string-array name="navigation_action_list">
