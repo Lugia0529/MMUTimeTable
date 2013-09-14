@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/input_event_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-8dip"
+        android:layout_marginBottom="6dip"
+        android:layout_gravity="left|center_vertical"
+        android:minHeight="48dip"
+        android:hint="@string/hint_event_name"
+    />
+
+    <EditText
+        android:id="@+id/input_event_venue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dip"
+        android:layout_gravity="left|center_vertical"
+        android:minHeight="48dip"
+        android:hint="@string/hint_venue"
+    />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dip"
+        android:layout_marginBottom="-8dip"
+        android:layout_marginLeft="12dip"
+        android:text="@string/label_event_date"
+        android:textColor="#FFAAAAAA"
+        android:textSize="14sp"
+        android:minHeight="24dip"
+    />
+
+    <Button
+        android:id="@+id/button_event_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/hint_date"
+        android:onClick="showDatePickerDialog"
+        style="@style/DropDownButtonStyle"
+     />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dip"
+        android:layout_marginBottom="-8dip"
+        android:layout_marginLeft="12dip"
+        android:text="@string/label_event_time"
+        android:textColor="#FFAAAAAA"
+        android:textSize="14sp"
+        android:minHeight="24dip"
+    />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dip"
+        android:weightSum="7"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button_event_time_start"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:text="@string/hint_time"
+            android:onClick="showTimePickerDialog"
+            style="@style/DropDownButtonStyle"
+        />
+
+        <TextView
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="-"
+            android:textSize="18sp"
+         />
+
+        <Button
+            android:id="@+id/button_event_time_end"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:text="@string/hint_time"
+            android:onClick="showTimePickerDialog"
+            style="@style/DropDownButtonStyle"
+        />
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dip"
+        android:layout_marginBottom="-8dip"
+        android:layout_marginLeft="12dip"
+        android:text="@string/label_event_type"
+        android:textColor="#FFAAAAAA"
+        android:textSize="14sp"
+        android:minHeight="24dip"
+    />
+
+    <Spinner
+        android:id="@+id/spinner_event_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-8dip"
+        android:layout_marginBottom="6dip"
+        android:layout_gravity="left|center_vertical"
+        android:minHeight="48dip"
+    />
+
+    <EditText
+        android:id="@+id/input_event_note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|center_vertical"
+        android:gravity="left|top"
+        android:inputType="textMultiLine"
+        android:minLines="5"
+        android:hint="@string/hint_note"
+    />
+
+</LinearLayout>

@@ -35,6 +35,7 @@ final class Subject
     private int mColor;
     
     private ArrayList<Schedule> mSchedule;
+    private ArrayList<Event> mEvent;
     
     public static final String JSON_SUBJECT_CODE        = "subjectCode";
     public static final String JSON_SUBJECT_DESCRIPTION = "subjectDescription";
@@ -43,6 +44,7 @@ final class Subject
     public static final String JSON_CREDIT_HOUR         = "creditHours";
     public static final String JSON_COLOR               = "color";
     public static final String JSON_SUBJECT_SCHEDULE    = "schedule";
+    public static final String JSON_SUBJECT_EVENT       = "event";
     
     private static final String TAG = "Subject";
     
@@ -55,6 +57,7 @@ final class Subject
         this.mCreditHours        = credit;
         
         this.mSchedule = new ArrayList<Schedule>();
+        this.mEvent = new ArrayList<Event>();
     }
     
     public Subject(String code, String description, String lecturer, String tutorial, int credit, int color)
@@ -67,6 +70,7 @@ final class Subject
         this.mColor              = color;
         
         this.mSchedule = new ArrayList<Schedule>();
+        this.mEvent = new ArrayList<Event>();
     }
     
     public Subject(JSONObject json)
@@ -107,6 +111,11 @@ final class Subject
     public ArrayList<Schedule> getSchedules()
     {
         return this.mSchedule;
+    }
+
+    public ArrayList<Event> getEvents()
+    {
+        return this.mEvent;
     }
     
     public void setSubjectCode(String mSubjectCode)
@@ -171,7 +180,12 @@ final class Subject
         Schedule sTime = new Schedule(section, day, time, 1, room);
         mSchedule.add(sTime);
     }
-    
+
+    public void addEvent(String name, String venue, String note, int type, int date, int timeStart, int timeEnd)
+    {
+        mEvent.add(new Event(name, venue, note, type, date, timeStart, timeEnd));
+    }
+
     public JSONObject getJSONObject()
     {
         JSONObject json = new JSONObject();
@@ -192,6 +206,13 @@ final class Subject
                 timeArray.put(time.getJSONObject());
             
             json.put(JSON_SUBJECT_SCHEDULE, timeArray);
+
+            JSONArray eventArray = new JSONArray();
+
+            for (Event event : mEvent)
+                eventArray.put(event.getJSONObject());
+
+            json.put(JSON_SUBJECT_EVENT, eventArray);
         }
         catch (JSONException e)
         {
@@ -215,6 +236,7 @@ final class Subject
             this.mTutorialSection = !json.isNull(JSON_TUTORIAL_SECTION) ? json.getString(JSON_TUTORIAL_SECTION) : null;
             
             this.mSchedule = new ArrayList<Schedule>();
+            this.mEvent = new ArrayList<Event>();
             
             JSONObject timeObject;
             
@@ -225,6 +247,17 @@ final class Subject
                 timeObject = timeArray.getJSONObject(i);
                 
                 this.mSchedule.add(new Schedule(timeObject));
+            }
+
+            JSONObject eventObject;
+
+            JSONArray eventArray = json.getJSONArray(JSON_SUBJECT_EVENT);
+
+            for (int i = 0; i < eventArray.length(); i++)
+            {
+                eventObject = eventArray.getJSONObject(i);
+
+                this.mEvent.add(new Event(eventObject));
             }
         }
         catch (Exception e)
@@ -239,6 +272,7 @@ final class Subject
             this.mCreditHours        = 0;
             
             this.mSchedule = new ArrayList<Schedule>();
+            this.mEvent = new ArrayList<Event>();
         }
     }
 }

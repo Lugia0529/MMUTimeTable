@@ -17,7 +17,6 @@
  
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
@@ -80,71 +79,22 @@
         />
         
     </RelativeLayout>
-    
-    <ScrollView
+
+    <android.support.v4.view.ViewPager
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="6dp">
-        
-        <LinearLayout
+        android:layout_height="match_parent">
+
+        <android.support.v4.view.PagerTabStrip
+            android:id="@+id/pager_tab_strip"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-            
-            <LinearLayout
-                android:id="@+id/layout_lecture_section"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="4dp"
-                    android:singleLine="true"
-                    android:text="@string/text_lecture_section"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                />
-                
-                <View
-                    android:id="@+id/view_lecture_divider"
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:background="#FF33B5E5"
-                />
-                
-            </LinearLayout>
-                
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="8dp"
-            />
-            
-            <LinearLayout
-                android:id="@+id/layout_tutorial_section"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="4dp"
-                    android:singleLine="true"
-                    android:text="@string/text_tutorial_section"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                />
-                
-                <View
-                    android:id="@+id/view_tutorial_divider"
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:background="#FF33B5E5"
-                />
-                
-            </LinearLayout>
-        </LinearLayout>
-    </ScrollView>
+            android:layout_gravity="top"
+            android:paddingBottom="4dp"
+            android:textColor="#FFF"
+        />
+
+    </android.support.v4.view.ViewPager>
+
 </LinearLayout>
