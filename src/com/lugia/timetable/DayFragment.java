@@ -31,12 +31,7 @@ public class DayFragment extends Fragment
     {
         View view = inflater.inflate(R.layout.fragment_day, null);
         
-        Bundle bundle = getArguments();
-        
-        String filename = bundle.getString(MasterActivity.EXTRA_FILE_NAME);
-        
         DayView dayView = (DayView)view.findViewById(R.id.day_view);
-        dayView.setFilename(filename);
         
         MasterActivity masterActivity = (MasterActivity)getActivity();
         dayView.setOnDayChangeListener(masterActivity);

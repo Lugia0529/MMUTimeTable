@@ -16,44 +16,81 @@
 
 package com.lugia.timetable;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.util.Log;
 
+/* Singleton Class
+ * Initialize technique: Initialization-on-demand holder idiom (IODHI)
+ */
 public class SubjectList extends ArrayList<Subject>
 {
-    public static final String JSON_SUBJECT_ARRAY = "timeTable";
+    // only use on first initialization
+    private static Context mContext;
     
-    private static final long serialVersionUID = 1L;
+    private static final String JSON_SUBJECT_ARRAY = "timeTable";
+    private static final String SAVEFILE = "data.ttg";
     
     private static final String TAG = "SubjectList";
     
-    public SubjectList()
+    /* SINGLETON HOLDER */
+    private static class InstanceHolder
     {
+        private static final SubjectList INSTANCE = new SubjectList();
+    }
+
+    public static synchronized SubjectList getInstance(Context context)
+    {
+        Log.i(TAG, "getIntance() called");
+        
+        if (mContext == null)
+            mContext = context;
+        
+        return InstanceHolder.INSTANCE;
     }
     
-    public SubjectList(String source)
+    private SubjectList()
     {
-        JSONObject object;
-        JSONArray array;
+        Log.i(TAG, "Construct Singleton");
         
+        File file = new File(mContext.getFilesDir(), SAVEFILE);
+        
+        if (!file.exists())
+            return;
+    
         try
         {
-            object = new JSONObject(source);
+            FileInputStream in = mContext.openFileInput(SAVEFILE);
+    
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+    
+            StringBuilder builder = new StringBuilder();
+            String line;
+    
+            while ((line = reader.readLine()) != null)
+                builder.append(line);
+    
+            reader.close();
             
-            array = object.getJSONArray(JSON_SUBJECT_ARRAY);
-            
-            for (int i = 0; i < array.length(); i++)
-                add(new Subject(array.getJSONObject(i)));
+            // Dont hanging subject list in imcomplete state
+            if (!extractJSON(builder.toString()))
+                clear();
         }
         catch (Exception e)
         {
-            // Something went wrong
-            Log.e(TAG, "Error on restore from JSON", e);
+            // something went wrong
+            Log.e(TAG, "Error on loading subject list!", e);
         }
     }
     
@@ -65,28 +102,39 @@ public class SubjectList extends ArrayList<Subject>
         
         return null;
     }
-    
-    public JSONObject generateJSON()
+
+    /**
+     * Remove all subject in current list and copy the content of newList to current list.
+     */
+    public void replace(ArrayList<Subject> newList)
     {
-        JSONObject rootObject  = new JSONObject();
-        JSONArray subjectArray = new JSONArray();
-        
+        clear();
+        addAll(newList);
+    }
+    
+    public boolean saveToFile(Context context)
+    {
         try
         {
-            for (Subject subject : this)
-                subjectArray.put(subject.getJSONObject());
-            
-            rootObject.put(JSON_SUBJECT_ARRAY, subjectArray);
+            FileOutputStream out = context.openFileOutput(SAVEFILE, Context.MODE_PRIVATE);
+            BufferedOutputStream stream = new BufferedOutputStream(out);
+
+            stream.write(generateJSON().toString().getBytes());
+
+            stream.flush();
+            stream.close();
+
+            out.close();
         }
-        catch (JSONException e)
+        catch (Exception e)
         {
-            // Something went wrong
-            Log.e(TAG, "Error on generate JSON", e);
-            
-            return null;
+            // something went wrong
+            Log.e(TAG, "Error on save!", e);
+
+            return false;
         }
-        
-        return rootObject;
+
+        return true;
     }
     
     public void displaySubjectListContent()
@@ -114,5 +162,53 @@ public class SubjectList extends ArrayList<Subject>
                                                            time.getRoom()));
             }
         }
+    }
+    
+    private boolean extractJSON(String source)
+    {
+        JSONObject object;
+        JSONArray array;
+
+        try
+        {
+            object = new JSONObject(source);
+
+            array = object.getJSONArray(JSON_SUBJECT_ARRAY);
+
+            for (int i = 0; i < array.length(); i++)
+                add(Subject.restoreFromJSON(array.getJSONObject(i)));
+        }
+        catch (Exception e)
+        {
+            // Something went wrong
+            Log.e(TAG, "Error on extract JSON", e);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private JSONObject generateJSON()
+    {
+        JSONObject rootObject  = new JSONObject();
+        JSONArray subjectArray = new JSONArray();
+
+        try
+        {
+            for (Subject subject : this)
+                subjectArray.put(subject.getJSONObject());
+
+            rootObject.put(JSON_SUBJECT_ARRAY, subjectArray);
+        }
+        catch (JSONException e)
+        {
+            // Something went wrong
+            Log.e(TAG, "Error on generate JSON", e);
+
+            return null;
+        }
+
+        return rootObject;
     }
 }

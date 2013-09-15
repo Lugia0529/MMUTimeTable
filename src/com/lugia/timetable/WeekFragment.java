@@ -30,14 +30,6 @@ public class WeekFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.fragment_week, null);
-        
-        Bundle bundle = getArguments();
-        
-        String filename = bundle.getString(MasterActivity.EXTRA_FILE_NAME);
-        
-        WeekView weekView = (WeekView)view.findViewById(R.id.week_view);
-        weekView.setFilename(filename);
-        
         return view;
     }
 }

@@ -16,10 +16,6 @@
 
 package com.lugia.timetable;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -33,7 +29,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,7 +40,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class SubjectDetailActivity extends FragmentActivity
 {
@@ -111,11 +105,8 @@ public class SubjectDetailActivity extends FragmentActivity
 
         Bundle intentExtra = getIntent().getExtras();
 
-        if (intentExtra.containsKey(MasterActivity.EXTRA_FILE_NAME))
-            loadFile(intentExtra.getString(MasterActivity.EXTRA_FILE_NAME));
-        else
-            loadFileFromSystem();
-
+        mSubjectList = SubjectList.getInstance(SubjectDetailActivity.this);
+        
         String subjectCode = intentExtra.getString(EXTRA_SUBJECT_CODE);
 
         mSubject = mSubjectList.findSubject(subjectCode);
@@ -175,81 +166,6 @@ public class SubjectDetailActivity extends FragmentActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-    
-    private boolean loadFileFromSystem()
-    {
-        File file = new File(getFilesDir(), MasterActivity.SAVEFILE);
-        
-        if (!file.exists())
-            return false;
-        
-        try
-        {
-            FileInputStream in = openFileInput(MasterActivity.SAVEFILE);
-            
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            
-            StringBuilder builder = new StringBuilder();
-            String line;
-            
-            while ((line = reader.readLine()) != null) 
-                builder.append(line);
-            
-            reader.close();
-            
-            mSubjectList = new SubjectList(builder.toString());
-        }
-        catch (Exception e)
-        {
-            // something went wrong
-            Log.e(TAG, "Error on load from system!", e);
-            
-            return false;
-        }
-        
-        return true;
-    }
-    
-    private boolean loadFile(final String filepath)
-    {
-        try
-        {
-            File file = new File(filepath);
-            
-            // check for file availability, if no exist, stop loading
-            if (!file.exists())
-            {
-                Toast.makeText(SubjectDetailActivity.this, "Fail to open file because it is not exist.", Toast.LENGTH_LONG).show();
-                
-                return false;
-            }
-            
-            // create reader
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-            
-            // require to read file
-            StringBuilder sb = new StringBuilder();
-            String line;
-            
-            // read the file line by line
-            while ((line = reader.readLine()) != null) 
-                sb.append(line);
-            
-            // done reading, close the file
-            reader.close();
-            
-            mSubjectList = new SubjectList(sb.toString());
-        }
-        catch (Exception e)
-        {
-            // fail to load
-            Log.e(TAG, "Error on load", e);
-            
-            return false;
-        }
-        
-        return true;
     }
 
     public class PagerAdapter extends FragmentPagerAdapter

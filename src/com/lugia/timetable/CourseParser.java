@@ -23,6 +23,8 @@ import org.jsoup.select.Elements;
 
 import android.util.Log;
 
+import java.util.ArrayList;
+
 // IMPORTATNT CORE FILE
 // DO NOT MODIFY THIS IF YOU NOT SURE WHAT YOU'RE DOING
 
@@ -71,7 +73,7 @@ public class CourseParser
     // prevent user to instantiate using default constructor
     private CourseParser() { }
     
-    public static final SubjectList tryParse(String source)
+    public static ArrayList<Subject> tryParse(String source)
     {
         Document document = Jsoup.parse(source);
         
@@ -82,7 +84,7 @@ public class CourseParser
         if (courseElements == null || scheduleElements == null)
             return null;
         
-        SubjectList subjectList = new SubjectList();
+        ArrayList<Subject> subjectList = new ArrayList<Subject>();
         
         parseCourseList(courseElements, subjectList);
         parseScheduleList(scheduleElements, subjectList);
@@ -148,7 +150,7 @@ public class CourseParser
         return elem.getElementsByTag("table").get(1).select("tr[bgcolor*=#ffffff]");
     }
     
-    private static void parseCourseList(Elements courseElements, SubjectList list)
+    private static void parseCourseList(Elements courseElements, ArrayList<Subject> list)
     {
         int count = 0;
         
@@ -188,11 +190,10 @@ public class CourseParser
         }
     }
     
-    private static void parseScheduleList(Elements scheduleElements, SubjectList list)
+    private static void parseScheduleList(Elements scheduleElements, ArrayList<Subject> list)
     {
         Subject currentSubject = null;
         int currentSection  = -1;
-        
         
         for (Element e : scheduleElements)
         {
@@ -217,8 +218,15 @@ public class CourseParser
                     
                     int day = convertDay(dayString);
                     int time = convertTime(timeString);
-                    
-                    currentSubject = list.findSubject(subjectCode);
+
+                    for (Subject subject : list)
+                    {
+                        if (subject.getSubjectCode().equalsIgnoreCase(subjectCode))
+                        {
+                            currentSubject = subject;
+                            break;
+                        }
+                    }
                     
                     if (currentSubject != null)
                     {

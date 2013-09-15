@@ -16,10 +16,6 @@
 
 package com.lugia.timetable;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -84,7 +80,7 @@ public class ReminderReceiver extends BroadcastReceiver
     
     public void registerReminder(final Context context, int notifyBefore)
     {
-        SubjectList subjectList = loadFileFromSystem(context);
+        SubjectList subjectList = SubjectList.getInstance(context);
         
         // bail out if we cannot get a valid subject list
         if (subjectList == null || subjectList.size() == 0)
@@ -155,37 +151,5 @@ public class ReminderReceiver extends BroadcastReceiver
         PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         
         manager.set(AlarmManager.RTC_WAKEUP, targetTimeMillies, pendingIntent);
-    }
-    
-    private SubjectList loadFileFromSystem(Context context)
-    {
-        File file = new File(context.getFilesDir(), MasterActivity.SAVEFILE);
-        
-        if (!file.exists())
-            return null;
-        
-        try
-        {
-            FileInputStream in = context.openFileInput(MasterActivity.SAVEFILE);
-            
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            
-            StringBuilder builder = new StringBuilder();
-            String line;
-            
-            while ((line = reader.readLine()) != null) 
-                builder.append(line);
-            
-            reader.close();
-            
-            return new SubjectList(builder.toString());
-        }
-        catch (Exception e)
-        {
-            // something went wrong
-            Log.e(TAG, "Error on load from system!", e);
-            
-            return null;
-        }
     }
 }

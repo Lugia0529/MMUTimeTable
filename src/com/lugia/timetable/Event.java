@@ -1,6 +1,8 @@
 package com.lugia.timetable;
 
 import android.util.Log;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Event
@@ -47,11 +49,18 @@ public class Event
         this.mTimeEnd   = timeEnd;
     }
 
-    public Event(JSONObject json)
+    public Event(long id, String name, String venue, String note, int type, int date, int timeStart, int timeEnd)
     {
-        restoreFromJSON(json);
+        this.mId        = id;
+        this.mName      = name;
+        this.mVenue     = venue;
+        this.mNote      = note;
+        this.mType      = type;
+        this.mDate      = date;
+        this.mTimeStart = timeStart;
+        this.mTimeEnd   = timeEnd;
     }
-
+    
     public long getId()
     {
         return mId;
@@ -182,37 +191,19 @@ public class Event
         return json;
     }
 
-    public void restoreFromJSON(JSONObject json)
+    public static Event restoreFromJSON(JSONObject json) throws JSONException
     {
-        try
-        {
-            this.mId = json.getLong(JSON_ID);
-
-            this.mName  = json.getString(JSON_NAME);
-            this.mVenue = json.getString(JSON_VENUE);
-            this.mNote  = json.getString(JSON_NOTE);
-
-            this.mType      = json.getInt(JSON_TYPE);
-            this.mDate      = json.getInt(JSON_DATE);
-            this.mTimeStart = json.getInt(JSON_TIME_START);
-            this.mTimeEnd   = json.getInt(JSON_TIME_END);
-        }
-        catch (Exception e)
-        {
-            // Something went wrong, so we need revert all change we made just now
-            Log.e(TAG, "Error on restore", e);
-
-            this.mId = 0;
-
-            this.mName  = "";
-            this.mVenue = "";
-            this.mNote  = "";
-
-            this.mType  = TYPE_UNKNOWN;
-
-            this.mDate      = 0;
-            this.mTimeStart = 0;
-            this.mTimeEnd   = 0;
-        }
+        long id = json.getLong(JSON_ID);
+        
+        String name  = json.getString(JSON_NAME);
+        String venue = json.getString(JSON_VENUE);
+        String note  = json.getString(JSON_NOTE);
+        
+        int type      = json.getInt(JSON_TYPE);
+        int date      = json.getInt(JSON_DATE);
+        int timeStart = json.getInt(JSON_TIME_START);
+        int timeEnd   = json.getInt(JSON_TIME_END);
+        
+        return new Event(id, name, venue, note, type, date, timeStart, timeEnd);
     }
 }

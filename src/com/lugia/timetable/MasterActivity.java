@@ -27,6 +27,7 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 /**
  * Main Activity
@@ -43,16 +44,12 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
      */
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
     
-    public static final String EXTRA_FILE_NAME = "com.lugia.timetable.Filename";
-    
     public static final int NAV_DAY  = 0;
     public static final int NAV_WEEK = 1;
     public static final int NAV_LIST = 2;
     
     public static final int REQUEST_CODE_OPEN_FILE     = 1;
     public static final int REQUEST_CODE_DOWNLOAD_DATA = 2;
-    
-    public static final String SAVEFILE = "data.ttg";
     
     private static final String TAG = "MasterActivity";
     
@@ -158,6 +155,7 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
     {
         if (item.getItemId() == R.id.action_load_file)
         {
+            /*
             Intent intent = new Intent();
             
             // create an intent to let user choose file to open
@@ -166,6 +164,9 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
                   .setType("file/*");
             
             startActivityForResult(intent, REQUEST_CODE_OPEN_FILE);
+            */
+
+            Toast.makeText(MasterActivity.this, "Feature Temporary Disabled.", Toast.LENGTH_LONG).show();
             
             return true;
         }
@@ -217,13 +218,6 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
             default:
                 return;
         }
-        
-        Bundle bundle = new Bundle();
-        
-        if (mFilename != null)
-            bundle.putString(EXTRA_FILE_NAME, mFilename);
-        
-        fragment.setArguments(bundle);
         
         getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
         

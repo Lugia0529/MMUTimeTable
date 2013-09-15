@@ -16,8 +16,6 @@
 
 package com.lugia.timetable;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,8 +56,6 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
     private EditText mPasswordInput;
     
     private ProgressDialog mProgressDialog;
-    
-    private SubjectList mSubjectList; 
     
     public static final String LOGIN_URL           = "https://icems.mmu.edu.my/sic/vlogin.jsp";
     public static final String COURSE_URL          = "https://icems.mmu.edu.my/sic/courses/crdetails_02.jsp";
@@ -169,31 +165,6 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
         });
     }
     
-    private boolean saveToFile()
-    {
-        try
-        {
-            FileOutputStream out = openFileOutput(MasterActivity.SAVEFILE, Context.MODE_PRIVATE);
-            BufferedOutputStream stream = new BufferedOutputStream(out);
-            
-            stream.write(mSubjectList.generateJSON().toString().getBytes());
-            
-            stream.flush();
-            stream.close();
-            
-            out.close();
-        }
-        catch (Exception e)
-        {
-            // something went wrong
-            Log.e(TAG, "Error on save!", e);
-            
-            return false;
-        }
-        
-        return true;
-    }
-    
     private final class LoginThread extends Thread
     {
         private String mMmuId;
@@ -247,22 +218,24 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
                 
                 String content = EntityUtils.toString(entity);
                 
-                mSubjectList = CourseParser.tryParse(content);
+                ArrayList<Subject> temp = CourseParser.tryParse(content);
                 
                 dismissProgressDialog();
                 
                 // subject list is null? there must be a problem
-                if (mSubjectList == null)
+                if (temp == null)
                 {
                     displayLoginFailDialog();
-                    
                     return;
                 }
+
+                SubjectList subjectList = SubjectList.getInstance(LoginActivity.this);
+                subjectList.replace(temp);
                 
                 // for debug purpose
-                mSubjectList.displaySubjectListContent();
+                subjectList.displaySubjectListContent();
                 
-                saveToFile();
+                subjectList.saveToFile(LoginActivity.this);
                 
                 showSuccessToast();
                 

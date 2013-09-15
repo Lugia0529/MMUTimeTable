@@ -22,8 +22,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.util.Log;
-
 final class Subject
 {
     private String mSubjectCode;
@@ -71,11 +69,6 @@ final class Subject
         
         this.mSchedule = new ArrayList<Schedule>();
         this.mEvent = new ArrayList<Event>();
-    }
-    
-    public Subject(JSONObject json)
-    {
-        restoreFromJSON(json);
     }
     
     public String getSubjectCode()
@@ -158,6 +151,11 @@ final class Subject
         return mTutorialSection != null;
     }
     
+    public void addSchedule(Schedule schedule)
+    {
+        mSchedule.add(schedule);
+    }
+    
     public void addSchedule(int section, int day, int time, String room)
     {
         for (Schedule sTime : mSchedule)
@@ -180,7 +178,12 @@ final class Subject
         Schedule sTime = new Schedule(section, day, time, 1, room);
         mSchedule.add(sTime);
     }
-
+    
+    public void addEvent(Event event)
+    {
+        mEvent.add(event);
+    }
+    
     public void addEvent(String name, String venue, String note, int type, int date, int timeStart, int timeEnd)
     {
         mEvent.add(new Event(name, venue, note, type, date, timeStart, timeEnd));
@@ -223,56 +226,27 @@ final class Subject
         return json;
     }
     
-    public void restoreFromJSON(JSONObject json)
+    public static Subject restoreFromJSON(JSONObject json) throws JSONException
     {
-        try
-        {
-            this.mSubjectCode        = json.getString(JSON_SUBJECT_CODE);
-            this.mSubjectDescription = json.getString(JSON_SUBJECT_DESCRIPTION);
-            this.mCreditHours        = json.getInt(JSON_CREDIT_HOUR);
-            this.mColor              = json.getInt(JSON_COLOR);
-            
-            this.mLectureSection  = !json.isNull(JSON_LECTURE_SECTION)  ? json.getString(JSON_LECTURE_SECTION)  : null;
-            this.mTutorialSection = !json.isNull(JSON_TUTORIAL_SECTION) ? json.getString(JSON_TUTORIAL_SECTION) : null;
-            
-            this.mSchedule = new ArrayList<Schedule>();
-            this.mEvent = new ArrayList<Event>();
-            
-            JSONObject timeObject;
-            
-            JSONArray timeArray = json.getJSONArray(JSON_SUBJECT_SCHEDULE);
-            
-            for (int i = 0; i < timeArray.length(); i++)
-            {
-                timeObject = timeArray.getJSONObject(i);
-                
-                this.mSchedule.add(new Schedule(timeObject));
-            }
-
-            JSONObject eventObject;
-
-            JSONArray eventArray = json.getJSONArray(JSON_SUBJECT_EVENT);
-
-            for (int i = 0; i < eventArray.length(); i++)
-            {
-                eventObject = eventArray.getJSONObject(i);
-
-                this.mEvent.add(new Event(eventObject));
-            }
-        }
-        catch (Exception e)
-        {
-            // Something went wrong, so we need revert all change we made just now
-            Log.e(TAG, "Error on restore", e);
-            
-            this.mSubjectCode        = "";
-            this.mSubjectDescription = "";
-            this.mLectureSection     = "";
-            this.mTutorialSection    = "";
-            this.mCreditHours        = 0;
-            
-            this.mSchedule = new ArrayList<Schedule>();
-            this.mEvent = new ArrayList<Event>();
-        }
+        String subjectCode        = json.getString(JSON_SUBJECT_CODE);
+        String subjectDescription = json.getString(JSON_SUBJECT_DESCRIPTION);
+        int creditHours           = json.getInt(JSON_CREDIT_HOUR);
+        int color                 = json.getInt(JSON_COLOR);
+        
+        String lectureSection  = !json.isNull(JSON_LECTURE_SECTION)  ? json.getString(JSON_LECTURE_SECTION)  : null;
+        String tutorialSection = !json.isNull(JSON_TUTORIAL_SECTION) ? json.getString(JSON_TUTORIAL_SECTION) : null;
+        
+        Subject subject = new Subject(subjectCode, subjectDescription, lectureSection, tutorialSection, creditHours, color);
+        
+        JSONArray timeArray = json.getJSONArray(JSON_SUBJECT_SCHEDULE);
+        JSONArray eventArray = json.getJSONArray(JSON_SUBJECT_EVENT);
+        
+        for (int i = 0; i < timeArray.length(); i++)
+            subject.addSchedule(Schedule.restoreFromJSON(timeArray.getJSONObject(i)));
+        
+        for (int i = 0; i < eventArray.length(); i++)
+            subject.addEvent(Event.restoreFromJSON(eventArray.getJSONObject(i)));
+        
+        return subject;
     }
 }

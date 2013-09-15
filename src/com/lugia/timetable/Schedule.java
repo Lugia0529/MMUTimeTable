@@ -70,11 +70,6 @@ final class Schedule
         this.mRoom    = room;
     }
     
-    public Schedule(JSONObject json)
-    {
-        restoreFromJSON(json);
-    }
-    
     public int getDay()
     {
         return this.mDay;
@@ -155,26 +150,15 @@ final class Schedule
         return json;
     }
     
-    public void restoreFromJSON(JSONObject json)
+    public static Schedule restoreFromJSON(JSONObject json) throws JSONException
     {
-        try
-        {
-            this.mDay     = json.getInt(JSON_DAY);
-            this.mTime    = json.getInt(JSON_TIME);
-            this.mLength  = json.getInt(JSON_LENGTH);
-            this.mSection = json.getInt(JSON_SECTION);
-            this.mRoom    = json.getString(JSON_ROOM);
-        }
-        catch (Exception e)
-        {
-            // Something went wrong, so we need revert all change we made just now
-            Log.e(TAG, "Error on restore", e);
-            
-            this.mDay     = 0;
-            this.mTime    = 0;
-            this.mLength  = 1;
-            this.mSection = -1;
-            this.mRoom    = "";
-        }
+        int day     = json.getInt(JSON_DAY);
+        int time    = json.getInt(JSON_TIME);
+        int length  = json.getInt(JSON_LENGTH);
+        int section = json.getInt(JSON_SECTION);
+        
+        String room = json.getString(JSON_ROOM);
+
+        return new Schedule(section, day, time, length, room);
     }
 }

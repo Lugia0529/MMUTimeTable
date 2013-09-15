@@ -16,10 +16,6 @@
 
 package com.lugia.timetable;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import android.content.Context;
@@ -81,7 +77,6 @@ public class WeekView extends View
 
     private boolean mScrolling;
     
-    private String mFilename;
     private String[] mTimeStrings;
     private String[] mDayStrings;
     
@@ -100,6 +95,8 @@ public class WeekView extends View
     public WeekView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
+        
+        mSubjectList = SubjectList.getInstance(context);
         
         mScroller = new OverScroller(context);
         mGestureDetector = new GestureDetector(context, new GestureListener());
@@ -331,100 +328,6 @@ public class WeekView extends View
         return bitmap;
     }
     
-    public SubjectList getSubjectList()
-    {
-        return this.mSubjectList;
-    }
-    
-    // ======================================================
-    // FILE LOADING
-    // ======================================================
-    
-    public void setFilename(final String filename)
-    {
-        boolean fileLoaded = filename != null ? loadFile(filename) : loadFileFromSystem();
-        
-        // exit method if we are failed to load file
-        if (!fileLoaded)
-            return;
-        
-        this.mFilename = filename;
-        
-        mBitmapCache.clear();
-    }
-    
-    private boolean loadFileFromSystem()
-    {
-        File file = new File(mContext.getFilesDir(), MasterActivity.SAVEFILE);
-        
-        if (!file.exists())
-            return false;
-        
-        try
-        {
-            FileInputStream in = mContext.openFileInput(MasterActivity.SAVEFILE);
-            
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            
-            StringBuilder builder = new StringBuilder();
-            String line;
-            
-            while ((line = reader.readLine()) != null) 
-                builder.append(line);
-            
-            reader.close();
-            
-            mSubjectList = new SubjectList(builder.toString());
-        }
-        catch (Exception e)
-        {
-            // something went wrong
-            Log.e(TAG, "Error on load from system!", e);
-            
-            return false;
-        }
-        
-        return true;
-    }
-    
-    boolean loadFile(final String filepath)
-    {
-        try
-        {
-            File file = new File(filepath);
-            
-            // check for file availability, if no exist, stop loading
-            if (!file.exists())
-                return false;
-            
-            // create reader
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-            
-            // require to read file
-            StringBuilder sb = new StringBuilder();
-            String line;
-            
-            // read the file line by line
-            while ((line = reader.readLine()) != null)
-                sb.append(line);
-            
-            // done reading, close the file
-            reader.close();
-            
-            mSubjectList = new SubjectList(sb.toString());
-        }
-        catch (Exception e)
-        {
-            // fail to load
-            Log.e(TAG, "Error on load", e);
-            
-            return false;
-        }
-        
-        // load is complete successfully
-        return true;
-    }
-    
     // ======================================================
     // TOUCH HANDLING
     // ======================================================
@@ -482,9 +385,6 @@ public class WeekView extends View
                         Intent intent = new Intent(mContext, SubjectDetailActivity.class);
                         
                         intent.putExtra(SubjectDetailActivity.EXTRA_SUBJECT_CODE, subject.getSubjectCode());
-                        
-                        if (mFilename != null)
-                            intent.putExtra(MasterActivity.EXTRA_FILE_NAME, mFilename);
                         
                         mContext.startActivity(intent);
                     }
