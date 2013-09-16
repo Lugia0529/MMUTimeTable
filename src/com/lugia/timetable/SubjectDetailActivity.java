@@ -43,23 +43,9 @@ import android.widget.TextView;
 
 public class SubjectDetailActivity extends FragmentActivity
 {
-    private RelativeLayout mHeaderLayout;
-
-    private ViewPager mViewPager;
-    private PagerTabStrip mTabStrip;
-
-    private TextView mSubjectTitleTextView;
-    private TextView mLectureSectionTextView;
-    private TextView mTutorialSectionTextView;
-    private TextView mCreditHoursTextView;
-
-    private PagerAdapter mAdapter;
-
-    private SubjectList mSubjectList;
     private Subject mSubject;
-
-    private int mColor;
-
+    
+    public static final String EXTRA_SUBJECT      = "com.lugia.timetable.Subject";
     public static final String EXTRA_SUBJECT_CODE = "com.lugia.timetable.SubjectCode";
     
     public static final String[] WEEKS = new String[]
@@ -91,26 +77,27 @@ public class SubjectDetailActivity extends FragmentActivity
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowTitleEnabled(false);
 
-        mAdapter = new PagerAdapter(getSupportFragmentManager());
+        PagerAdapter adapter = new PagerAdapter(getSupportFragmentManager());
 
-        mViewPager = (ViewPager)findViewById(R.id.pager);
-        mTabStrip = (PagerTabStrip)findViewById(R.id.pager_tab_strip);
+        ViewPager viewPager = (ViewPager)findViewById(R.id.pager);
+        PagerTabStrip tabStrip = (PagerTabStrip)findViewById(R.id.pager_tab_strip);
 
-        mHeaderLayout = (RelativeLayout)findViewById(R.id.layout_header);
+        RelativeLayout headerLayout = (RelativeLayout)findViewById(R.id.layout_header);
 
-        mSubjectTitleTextView    = (TextView)findViewById(R.id.text_subject_title);
-        mLectureSectionTextView  = (TextView)findViewById(R.id.text_lecture_section);
-        mTutorialSectionTextView = (TextView)findViewById(R.id.text_tutorial_section);
-        mCreditHoursTextView     = (TextView)findViewById(R.id.text_credit_hour);
+        TextView subjectTitleTextView    = (TextView)findViewById(R.id.text_subject_title);
+        TextView lectureSectionTextView  = (TextView)findViewById(R.id.text_lecture_section);
+        TextView tutorialSectionTextView = (TextView)findViewById(R.id.text_tutorial_section);
+        TextView creditHoursTextView     = (TextView)findViewById(R.id.text_credit_hour);
 
         Bundle intentExtra = getIntent().getExtras();
 
-        mSubjectList = SubjectList.getInstance(SubjectDetailActivity.this);
+        SubjectList subjectList = SubjectList.getInstance(SubjectDetailActivity.this);
         
         String subjectCode = intentExtra.getString(EXTRA_SUBJECT_CODE);
 
-        mSubject = mSubjectList.findSubject(subjectCode);
-        mColor   = mSubject.getColor();
+        mSubject = subjectList.findSubject(subjectCode);
+        
+        int color = mSubject.getColor();
 
         String subjectDescription = mSubject.getSubjectDescription();
         String lectureSection     = mSubject.getLectureSection();
@@ -118,17 +105,17 @@ public class SubjectDetailActivity extends FragmentActivity
 
         int creditHours = mSubject.getCreditHours();
 
-        mViewPager.setAdapter(mAdapter);
+        viewPager.setAdapter(adapter);
 
-        mHeaderLayout.setBackgroundColor(mColor);
+        headerLayout.setBackgroundColor(color);
 
-        mTabStrip.setTextColor(mColor);
-        mTabStrip.setTabIndicatorColor(mColor);
+        tabStrip.setTextColor(color);
+        tabStrip.setTabIndicatorColor(color);
 
-        mSubjectTitleTextView.setText(subjectCode + " - " + subjectDescription);
-        mLectureSectionTextView.setText(lectureSection);
-        mTutorialSectionTextView.setText(tutorialSection);
-        mCreditHoursTextView.setText(creditHours + " Credit Hours");
+        subjectTitleTextView.setText(subjectCode + " - " + subjectDescription);
+        lectureSectionTextView.setText(lectureSection);
+        tutorialSectionTextView.setText(tutorialSection);
+        creditHoursTextView.setText(creditHours + " Credit Hours");
     }
 
     @Override
@@ -179,11 +166,14 @@ public class SubjectDetailActivity extends FragmentActivity
         public Fragment getItem(int i)
         {
             Fragment fragment;
-
+            
+            Bundle args = new Bundle();
+            args.putParcelable(EXTRA_SUBJECT, mSubject);
+            
             if (i == 0)
-                fragment = new ScheduleFragment();
+                fragment = ScheduleFragment.newInstance(args);
             else
-                fragment = new EventFragment();
+                fragment = EventFragment.newInstance(args);
 
             return fragment;
         }
@@ -205,48 +195,52 @@ public class SubjectDetailActivity extends FragmentActivity
     }
 
     // Fragment class for schedule list
-    public class ScheduleFragment extends Fragment
+    public static class ScheduleFragment extends Fragment
     {
-        private LinearLayout mLectureSectionLayout;
-        private LinearLayout mTutorialSectionLayout;
-
+        public static ScheduleFragment newInstance(Bundle args)
+        {
+            ScheduleFragment fragment = new ScheduleFragment();
+            
+            fragment.setArguments(args);
+            
+            return fragment;
+        }
+        
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
+            Subject subject = getArguments().getParcelable(EXTRA_SUBJECT);
+            
             View view = inflater.inflate(R.layout.fragment_schedule, container, false);
-
-            mLectureSectionLayout = (LinearLayout)view.findViewById(R.id.layout_lecture_section);
-            mTutorialSectionLayout = (LinearLayout)view.findViewById(R.id.layout_tutorial_section);
-
-            view.findViewById(R.id.view_lecture_divider).setBackgroundColor(mColor);
-            view.findViewById(R.id.view_tutorial_divider).setBackgroundColor(mColor);
-
+            
+            view.findViewById(R.id.view_lecture_divider).setBackgroundColor(subject.getColor());
+            view.findViewById(R.id.view_tutorial_divider).setBackgroundColor(subject.getColor());
+            
+            LinearLayout lectureSectionLayout = (LinearLayout)view.findViewById(R.id.layout_lecture_section);
+            LinearLayout tutorialSectionLayout = (LinearLayout)view.findViewById(R.id.layout_tutorial_section);
+            
             // hide the lecture section detail if this course dont have lecture section
-            if (!mSubject.hasLectureSection())
-            {
-                mLectureSectionTextView.setVisibility(View.GONE);
-                mLectureSectionLayout.setVisibility(View.GONE);
-            }
+            if (!subject.hasLectureSection())
+                lectureSectionLayout.setVisibility(View.GONE);
 
             // hide the tutorial section detail if this course dont have tutorial section
-            if (!mSubject.hasTutorialSection())
-            {
-                mTutorialSectionTextView.setVisibility(View.GONE);
-                mTutorialSectionLayout.setVisibility(View.GONE);
-            }
+            if (!subject.hasTutorialSection())
+                tutorialSectionLayout.setVisibility(View.GONE);
 
-            createTimeTableList(inflater);
+            createTimeTableList(subject, lectureSectionLayout, tutorialSectionLayout);
 
             return view;
         }
 
-        private void createTimeTableList(LayoutInflater inflater)
+        private void createTimeTableList(Subject subject, LinearLayout lectureSectionLayout, LinearLayout tutorialSectionLayout)
         {
-            ArrayList<Schedule> schedules = mSubject.getSchedules();
-
+            ArrayList<Schedule> schedules = subject.getSchedules();
+            
             int lectureCount = 0;
             int tutorialCount = 0;
-
+            
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            
             for (Schedule schedule : schedules)
             {
                 View view = inflater.inflate(R.layout.item_time, null);
@@ -259,28 +253,28 @@ public class SubjectDetailActivity extends FragmentActivity
                 timeTextView.setText("Time: " + TIMES[schedule.getTime()] + " - " + TIMES[schedule.getTime() + schedule.getLength()]);
                 roomTextView.setText("Room: " + schedule.getRoom());
 
-                if (schedule.getSection() == Schedule.LECTURE_SECTION && mSubject.hasLectureSection())
+                if (schedule.getSection() == Schedule.LECTURE_SECTION && subject.hasLectureSection())
                 {
                     if (lectureCount++ > 0)
                     {
                         View divider = inflater.inflate(R.layout.item_divider, null);
-                        mLectureSectionLayout.addView(divider);
+                        lectureSectionLayout.addView(divider);
                     }
 
-                    mLectureSectionLayout.addView(view);
+                    lectureSectionLayout.addView(view);
 
                     continue;
                 }
 
-                if (schedule.getSection() == Schedule.TUTORIAL_SECTION && mSubject.hasTutorialSection())
+                if (schedule.getSection() == Schedule.TUTORIAL_SECTION && subject.hasTutorialSection())
                 {
                     if (tutorialCount++ > 0)
                     {
                         View divider = inflater.inflate(R.layout.item_divider, null);
-                        mTutorialSectionLayout.addView(divider);
+                        tutorialSectionLayout.addView(divider);
                     }
 
-                    mTutorialSectionLayout.addView(view);
+                    tutorialSectionLayout.addView(view);
 
                     continue;
                 }
@@ -289,22 +283,30 @@ public class SubjectDetailActivity extends FragmentActivity
     }
 
     // Fragment class for event list
-    public class EventFragment extends Fragment
+    public static class EventFragment extends Fragment
     {
-        private LayoutInflater mLayoutInflater;
         private EventAdapter mEventAdapter;
+        
+        public static EventFragment newInstance(Bundle args)
+        {
+            EventFragment fragment = new EventFragment();
 
+            fragment.setArguments(args);
+
+            return fragment;
+        }
+        
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
-            mLayoutInflater = inflater;
-
+            Subject subject = getArguments().getParcelable(EXTRA_SUBJECT);
+            
             View view = inflater.inflate(R.layout.fragment_event, container, false);
-
+            
             ListView listView = (ListView)view.findViewById(R.id.list_event);
 
-            mEventAdapter = new EventAdapter(SubjectDetailActivity.this, R.id.text_name);
-            mEventAdapter.addAll(mSubject.getEvents());
+            mEventAdapter = new EventAdapter(getActivity(), R.id.text_name);
+            mEventAdapter.addAll(subject.getEvents());
 
             listView.setEmptyView(view.findViewById(R.id.empty));
             listView.setAdapter(mEventAdapter);
@@ -323,9 +325,9 @@ public class SubjectDetailActivity extends FragmentActivity
             public View getView(int position, View convertView, ViewGroup parent)
             {
                 Event event = getItem(position);
-
+                
                 if (convertView == null)
-                    convertView = mLayoutInflater.inflate(R.layout.item_event, null);
+                    convertView = getActivity().getLayoutInflater().inflate(R.layout.item_event, null);
 
                 if (event != null)
                 {
