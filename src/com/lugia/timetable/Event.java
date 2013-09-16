@@ -16,10 +16,13 @@
 
 package com.lugia.timetable;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Event
+final class Event implements Parcelable
 {
     private String mName;
     private String mVenue;
@@ -220,4 +223,61 @@ public class Event
         
         return new Event(id, name, venue, note, type, date, timeStart, timeEnd);
     }
+
+    // =======================================
+    // Parcelable
+    // =======================================
+
+    /**
+     * Constructor for Parcelable.
+     *
+     * @param parcel the parcel.
+     */
+    private Event(Parcel parcel)
+    {
+        mId        = parcel.readLong();
+        
+        mName      = parcel.readString();
+        mVenue     = parcel.readString();
+        mNote      = parcel.readString();
+
+        mType      = parcel.readInt();
+        mDate      = parcel.readInt();
+        mTimeStart = parcel.readInt();
+        mTimeEnd   = parcel.readInt();
+    }
+    
+    @Override
+    public int describeContents() 
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeLong(mId);
+        
+        dest.writeString(mName);
+        dest.writeString(mVenue);
+        dest.writeString(mNote);
+        
+        dest.writeInt(mType);
+        dest.writeInt(mDate);
+        dest.writeInt(mTimeStart);
+        dest.writeInt(mTimeEnd);
+    }
+
+    public static final Parcelable.Creator<Event> CREATOR = new Parcelable.Creator<Event>()
+    {
+        public Event createFromParcel(Parcel source)
+        {
+            return new Event(source);
+        }
+
+        public Event[] newArray(int size)
+        {
+            return new Event[size];
+        }
+    };
 }

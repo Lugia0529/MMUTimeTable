@@ -16,13 +16,16 @@
 
 package com.lugia.timetable;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-final class Subject
+final class Subject implements Parcelable
 {
     private String mSubjectCode;
     private String mSubjectDescription;
@@ -249,4 +252,61 @@ final class Subject
         
         return subject;
     }
+
+    //=======================================
+    // Parcelable
+    // =======================================
+
+    /**
+     * Constructor for Parcelable.
+     *
+     * @param parcel the parcel.
+     */
+    private Subject(Parcel parcel)
+    {
+        mSubjectCode = parcel.readString();
+        mSubjectDescription = parcel.readString();
+        mLectureSection = parcel.readString();
+        mTutorialSection = parcel.readString();
+        
+        mCreditHours = parcel.readInt();
+        mColor = parcel.readInt();
+        
+        parcel.readTypedList(mSchedule = new ArrayList<Schedule>(), Schedule.CREATOR);
+        parcel.readTypedList(mEvent = new ArrayList<Event>(), Event.CREATOR);
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(mSubjectCode);
+        dest.writeString(mSubjectDescription);
+        dest.writeString(mLectureSection);
+        dest.writeString(mTutorialSection);
+
+        dest.writeInt(mCreditHours);
+        dest.writeInt(mColor);
+
+        dest.writeTypedList(mSchedule);
+        dest.writeTypedList(mEvent);
+    }
+
+    public static final Parcelable.Creator<Subject> CREATOR = new Parcelable.Creator<Subject>()
+    {
+        public Subject createFromParcel(Parcel source)
+        {
+            return new Subject(source);
+        }
+
+        public Subject[] newArray(int size)
+        {
+            return new Subject[size];
+        }
+    };
 }

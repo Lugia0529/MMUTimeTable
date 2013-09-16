@@ -16,12 +16,13 @@
 
 package com.lugia.timetable;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.util.Log;
-
-final class Schedule
+final class Schedule implements Parcelable
 {
     private int mSection;
     private int mDay;
@@ -161,4 +162,53 @@ final class Schedule
 
         return new Schedule(section, day, time, length, room);
     }
+
+    //=======================================
+    // Parcelable
+    // =======================================
+
+    /**
+     * Constructor for Parcelable.
+     *
+     * @param parcel the parcel.
+     */
+    private Schedule(Parcel parcel)
+    {
+        mSection = parcel.readInt();
+        mDay     = parcel.readInt();
+        mTime    = parcel.readInt();
+        mLength  = parcel.readInt();
+        
+        mRoom    = parcel.readString();
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeInt(mSection);
+        dest.writeInt(mDay);
+        dest.writeInt(mTime);
+        dest.writeInt(mLength);
+        
+        dest.writeString(mRoom);
+    }
+
+    public static final Parcelable.Creator<Schedule> CREATOR = new Parcelable.Creator<Schedule>()
+    {
+        public Schedule createFromParcel(Parcel source)
+        {
+            return new Schedule(source);
+        }
+
+        public Schedule[] newArray(int size)
+        {
+            return new Schedule[size];
+        }
+    };
 }
