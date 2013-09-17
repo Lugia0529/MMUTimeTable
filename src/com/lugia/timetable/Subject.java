@@ -58,7 +58,7 @@ final class Subject implements Parcelable
         this.mCreditHours        = credit;
         
         this.mSchedule = new ArrayList<Schedule>();
-        this.mEvent = new ArrayList<Event>();
+        this.mEvent    = new ArrayList<Event>();
     }
     
     public Subject(String code, String description, String lecturer, String tutorial, int credit, int color)
@@ -191,7 +191,21 @@ final class Subject implements Parcelable
     {
         mEvent.add(new Event(name, venue, note, type, date, timeStart, timeEnd));
     }
-
+    
+    public boolean deleteEvent(long eventId)
+    {
+        return mEvent.remove(findEvent(eventId));
+    }
+    
+    public Event findEvent(long eventId)
+    {
+        for (Event event : mEvent)
+            if (event.getId() == eventId)
+                return event;
+        
+        return null;
+    }
+    
     public JSONObject getJSONObject()
     {
         JSONObject json = new JSONObject();
@@ -264,13 +278,13 @@ final class Subject implements Parcelable
      */
     private Subject(Parcel parcel)
     {
-        mSubjectCode = parcel.readString();
+        mSubjectCode        = parcel.readString();
         mSubjectDescription = parcel.readString();
-        mLectureSection = parcel.readString();
-        mTutorialSection = parcel.readString();
+        mLectureSection     = parcel.readString();
+        mTutorialSection    = parcel.readString();
         
-        mCreditHours = parcel.readInt();
-        mColor = parcel.readInt();
+        mCreditHours        = parcel.readInt();
+        mColor              = parcel.readInt();
         
         parcel.readTypedList(mSchedule = new ArrayList<Schedule>(), Schedule.CREATOR);
         parcel.readTypedList(mEvent = new ArrayList<Event>(), Event.CREATOR);

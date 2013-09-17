@@ -38,7 +38,7 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-public class EditEventActivity extends Activity
+public class EventFormActivity extends Activity
 {
     private EditText mNameEditText;
     private EditText mVenueEditText;
@@ -52,7 +52,9 @@ public class EditEventActivity extends Activity
 
     private SubjectList mSubjectList;
     private Subject mSubject;
-
+    
+    private Event mEvent;
+    
     private int[] mDate = new int[3];
     private int[] mTime = new int[4];
 
@@ -60,14 +62,15 @@ public class EditEventActivity extends Activity
     private static final String TIME_PICKER_TAG = "time_picker";
 
     public static final String EXTRA_SUBJECT_CODE = "com.lugia.timetable.SubjectCode";
-
-    private static final String TAG = "EditEventActivity";
+    public static final String EXTRA_EVENT_ID     = "com.lugia.timetable.EventId";
+    
+    private static final String TAG = "EventFormActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_event);
+        setContentView(R.layout.activity_event_form);
 
         final Calendar calendar = Calendar.getInstance();
 
@@ -83,11 +86,13 @@ public class EditEventActivity extends Activity
 
         Bundle intentExtra = getIntent().getExtras();
 
-        mSubjectList = SubjectList.getInstance(EditEventActivity.this);
-
         String subjectCode = intentExtra.getString(EXTRA_SUBJECT_CODE);
-
+        long eventId = intentExtra.getLong(EXTRA_EVENT_ID, 0);
+        
+        mSubjectList = SubjectList.getInstance(EventFormActivity.this);
+        
         mSubject = mSubjectList.findSubject(subjectCode);
+        mEvent = mSubject.findEvent(eventId);
 
         mNameEditText = (EditText)findViewById(R.id.input_event_name);
         mVenueEditText = (EditText)findViewById(R.id.input_event_venue);
@@ -100,16 +105,35 @@ public class EditEventActivity extends Activity
         mTimeEndButton = (Button)findViewById(R.id.button_event_time_end);
 
         mTypeSpinner.setAdapter(adapter);
+        
+        if (mEvent != null)
+        {
+            // mEvent not null, we are editing the event
+            mNameEditText.setText(mEvent.getName());
+            mVenueEditText.setText(mEvent.getVenue());
+            mNoteEditText.setText(mEvent.getNote());
+            
+            mTypeSpinner.setSelection(mEvent.getType());
+            
+            mDate = new int[] { mEvent.getYear(), mEvent.getMonth(), mEvent.getDay() };
+            
+            mTime = new int[] { mEvent.getStartHour(), mEvent.getStartMinute(), 
+                                mEvent.getEndHour(),   mEvent.getEndMinute()    };
+        }
+        else
+        {
+            // default value for time
+            mDate[0] = calendar.get(Calendar.YEAR);
+            mDate[1] = calendar.get(Calendar.MONTH);
+            mDate[2] = calendar.get(Calendar.DAY_OF_MONTH);
+            
+            // more better default time
+            mTime[0] = calendar.get(Calendar.HOUR_OF_DAY) + 1;
+            mTime[1] = 0;
 
-        mDate[0] = calendar.get(Calendar.YEAR);
-        mDate[1] = calendar.get(Calendar.MONTH);
-        mDate[2] = calendar.get(Calendar.DAY_OF_MONTH);
-
-        mTime[0] = calendar.get(Calendar.HOUR_OF_DAY);
-        mTime[1] = calendar.get(Calendar.MINUTE);
-
-        mTime[2] = calendar.get(Calendar.HOUR_OF_DAY) + 1;
-        mTime[3] = calendar.get(Calendar.MINUTE);
+            mTime[2] = mTime[0] + 1;
+            mTime[3] = 0;
+        }
 
         mDateButton.setText(getFormattedDate(mDate[0], mDate[1], mDate[2]));
         mTimeStartButton.setText(getFormattedTime(mTime[0], mTime[1]));
@@ -141,22 +165,38 @@ public class EditEventActivity extends Activity
 
         if (eventName.isEmpty())
         {
-            Toast.makeText(EditEventActivity.this, "Event name cannot be empty!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(EventFormActivity.this, "Event name cannot be empty!", Toast.LENGTH_SHORT).show();
             return;
         }
 
         int eventType = mTypeSpinner.getSelectedItemPosition();
-
+        
         int eventDate      = (mDate[0] * 10000) + (mDate[1] * 100) + mDate[2];
         int eventTimeStart = (mTime[0] * 100) + mTime[1];
         int eventTimeEnd   = (mTime[2] * 100) + mTime[3];
-
-        mSubject.addEvent(eventName, eventVenue, eventNote, eventType, eventDate, eventTimeStart, eventTimeEnd);
         
-        mSubjectList.saveToFile(EditEventActivity.this);
+        if (mEvent != null)
+        {
+            // update event
+            mEvent.setName(eventName);
+            mEvent.setVenue(eventVenue);
+            mEvent.setNote(eventNote);
+            mEvent.setType(eventType);
+            mEvent.setDate(eventDate);
+            mEvent.setTime(eventTimeStart, eventTimeEnd);
+        }
+        else
+        {
+            // New event
+            mSubject.addEvent(eventName, eventVenue, eventNote, eventType, eventDate, eventTimeStart, eventTimeEnd);
+        }
 
-        Toast.makeText(EditEventActivity.this, "Event Saved", Toast.LENGTH_SHORT).show();
+        mSubjectList.saveToFile(EventFormActivity.this);
 
+        Toast.makeText(EventFormActivity.this, "Event Saved", Toast.LENGTH_SHORT).show();
+        
+        setResult(RESULT_OK);
+        
         finish();
     }
 
@@ -229,7 +269,7 @@ public class EditEventActivity extends Activity
             else
                 return new TimePickerDialog(getActivity(), TimeDialogFragment.this, mTime[2], mTime[3], DateFormat.is24HourFormat(getActivity()));
         }
-
+        
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute)
         {

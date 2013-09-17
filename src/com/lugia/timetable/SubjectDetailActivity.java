@@ -35,6 +35,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.content.Intent;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -43,9 +44,8 @@ import android.widget.TextView;
 
 public class SubjectDetailActivity extends FragmentActivity
 {
-    private Subject mSubject;
+    private static Subject mSubject;
     
-    public static final String EXTRA_SUBJECT      = "com.lugia.timetable.Subject";
     public static final String EXTRA_SUBJECT_CODE = "com.lugia.timetable.SubjectCode";
     
     public static final String[] WEEKS = new String[]
@@ -78,12 +78,12 @@ public class SubjectDetailActivity extends FragmentActivity
         actionBar.setDisplayShowTitleEnabled(false);
 
         PagerAdapter adapter = new PagerAdapter(getSupportFragmentManager());
-
+        
         ViewPager viewPager = (ViewPager)findViewById(R.id.pager);
         PagerTabStrip tabStrip = (PagerTabStrip)findViewById(R.id.pager_tab_strip);
-
+        
         RelativeLayout headerLayout = (RelativeLayout)findViewById(R.id.layout_header);
-
+        
         TextView subjectTitleTextView    = (TextView)findViewById(R.id.text_subject_title);
         TextView lectureSectionTextView  = (TextView)findViewById(R.id.text_lecture_section);
         TextView tutorialSectionTextView = (TextView)findViewById(R.id.text_tutorial_section);
@@ -106,7 +106,6 @@ public class SubjectDetailActivity extends FragmentActivity
         int creditHours = mSubject.getCreditHours();
 
         viewPager.setAdapter(adapter);
-
         headerLayout.setBackgroundColor(color);
 
         tabStrip.setTextColor(color);
@@ -145,9 +144,9 @@ public class SubjectDetailActivity extends FragmentActivity
 
         if (item.getItemId() == R.id.action_new_event)
         {
-            Intent intent = new Intent(SubjectDetailActivity.this, EditEventActivity.class);
+            Intent intent = new Intent(SubjectDetailActivity.this, EventFormActivity.class);
 
-            intent.putExtra(EditEventActivity.EXTRA_SUBJECT_CODE, mSubject.getSubjectCode());
+            intent.putExtra(EventFormActivity.EXTRA_SUBJECT_CODE, mSubject.getSubjectCode());
 
             startActivity(intent);
         }
@@ -168,7 +167,6 @@ public class SubjectDetailActivity extends FragmentActivity
             Fragment fragment;
             
             Bundle args = new Bundle();
-            args.putParcelable(EXTRA_SUBJECT, mSubject);
             
             if (i == 0)
                 fragment = ScheduleFragment.newInstance(args);
@@ -209,26 +207,24 @@ public class SubjectDetailActivity extends FragmentActivity
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
-            Subject subject = getArguments().getParcelable(EXTRA_SUBJECT);
-            
             View view = inflater.inflate(R.layout.fragment_schedule, container, false);
             
-            view.findViewById(R.id.view_lecture_divider).setBackgroundColor(subject.getColor());
-            view.findViewById(R.id.view_tutorial_divider).setBackgroundColor(subject.getColor());
+            view.findViewById(R.id.view_lecture_divider).setBackgroundColor(mSubject.getColor());
+            view.findViewById(R.id.view_tutorial_divider).setBackgroundColor(mSubject.getColor());
             
             LinearLayout lectureSectionLayout = (LinearLayout)view.findViewById(R.id.layout_lecture_section);
             LinearLayout tutorialSectionLayout = (LinearLayout)view.findViewById(R.id.layout_tutorial_section);
             
             // hide the lecture section detail if this course dont have lecture section
-            if (!subject.hasLectureSection())
+            if (!mSubject.hasLectureSection())
                 lectureSectionLayout.setVisibility(View.GONE);
 
             // hide the tutorial section detail if this course dont have tutorial section
-            if (!subject.hasTutorialSection())
+            if (!mSubject.hasTutorialSection())
                 tutorialSectionLayout.setVisibility(View.GONE);
 
-            createTimeTableList(subject, lectureSectionLayout, tutorialSectionLayout);
-
+            createTimeTableList(mSubject, lectureSectionLayout, tutorialSectionLayout);
+            
             return view;
         }
 
@@ -283,7 +279,7 @@ public class SubjectDetailActivity extends FragmentActivity
     }
 
     // Fragment class for event list
-    public static class EventFragment extends Fragment
+    public static class EventFragment extends Fragment implements AdapterView.OnItemClickListener, EventDetailDialogFragment.OnEventDeletedListener
     {
         private EventAdapter mEventAdapter;
         
@@ -299,21 +295,62 @@ public class SubjectDetailActivity extends FragmentActivity
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
-            Subject subject = getArguments().getParcelable(EXTRA_SUBJECT);
-            
             View view = inflater.inflate(R.layout.fragment_event, container, false);
             
             ListView listView = (ListView)view.findViewById(R.id.list_event);
 
             mEventAdapter = new EventAdapter(getActivity(), R.id.text_name);
-            mEventAdapter.addAll(subject.getEvents());
-
+            mEventAdapter.addAll(mSubject.getEvents());
+            
             listView.setEmptyView(view.findViewById(R.id.empty));
             listView.setAdapter(mEventAdapter);
+            listView.setOnItemClickListener(EventFragment.this);
 
             return view;
         }
 
+        @Override
+        public void onResume()
+        {
+            super.onResume();
+            
+            // update the event list
+            if (mEventAdapter != null)
+            {
+                mEventAdapter.clear();
+                mEventAdapter.addAll(mSubject.getEvents());
+                mEventAdapter.notifyDataSetChanged();
+            }
+        }
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+        {
+            Event event = mEventAdapter.getItem(position);
+            
+            Bundle args = new Bundle();
+            
+            args.putString(EventDetailDialogFragment.EXTRA_SUBJECT_CODE, mSubject.getSubjectCode());
+            args.putLong(EventDetailDialogFragment.EXTRA_EVENT_ID, event.getId());
+            
+            EventDetailDialogFragment f = EventDetailDialogFragment.newInstance(args);
+            f.setEventUpdateListener(EventFragment.this);
+            
+            f.show(getActivity().getFragmentManager(), event.getName());
+        }
+
+        @Override
+        public void onEventDeleted()
+        {
+            // update the event list
+            if (mEventAdapter != null)
+            {
+                mEventAdapter.clear();
+                mEventAdapter.addAll(mSubject.getEvents());
+                mEventAdapter.notifyDataSetChanged();
+            }
+        }
+        
         class EventAdapter extends ArrayAdapter<Event>
         {
             public EventAdapter(Context context, int textViewResourceId)
