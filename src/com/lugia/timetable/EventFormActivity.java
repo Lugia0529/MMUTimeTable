@@ -25,6 +25,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
@@ -196,6 +197,15 @@ public class EventFormActivity extends Activity
         Toast.makeText(EventFormActivity.this, "Event Saved", Toast.LENGTH_SHORT).show();
         
         setResult(RESULT_OK);
+
+        // update event reminder if user enable it
+        if (SettingActivity.getBoolean(EventFormActivity.this, SettingActivity.KEY_EVENT_NOTIFICATION, false))
+        {
+            Intent broadcastIntent = new Intent(EventFormActivity.this, ReminderReceiver.class);
+            broadcastIntent.setAction(ReminderReceiver.ACTION_UPDATE_EVENT_REMINDER);
+
+            sendBroadcast(broadcastIntent);
+        }
         
         finish();
     }

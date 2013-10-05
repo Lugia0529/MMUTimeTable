@@ -38,6 +38,7 @@ public class EventDetailDialogFragment extends DialogFragment implements View.On
     
     public static final String EXTRA_SUBJECT_CODE = "com.lugia.timetable.SubjectCode";
     public static final String EXTRA_EVENT_ID     = "com.lugia.timetable.EventId";
+    public static final String EXTRA_EDITABLE     = "com.lugia.timetable.Editable";
     
     private static final String TAG = "EventDetailDialogFragment";
     
@@ -64,6 +65,7 @@ public class EventDetailDialogFragment extends DialogFragment implements View.On
     {
         String subjectCode = getArguments().getString(EXTRA_SUBJECT_CODE);
         long eventId = getArguments().getLong(EXTRA_EVENT_ID, 0);
+        boolean editable = getArguments().getBoolean(EXTRA_EDITABLE, true);
         
         Subject subject = SubjectList.getInstance(getActivity()).findSubject(subjectCode);
         Event event = subject.findEvent(eventId);
@@ -94,8 +96,16 @@ public class EventDetailDialogFragment extends DialogFragment implements View.On
         headerLayout.setBackgroundColor(color);
         dividerView.setBackgroundColor(color);
         
-        editEventButton.setOnClickListener(EventDetailDialogFragment.this);
-        deleteEventButton.setOnClickListener(EventDetailDialogFragment.this);
+        if (editable)
+        {
+            editEventButton.setOnClickListener(EventDetailDialogFragment.this);
+            deleteEventButton.setOnClickListener(EventDetailDialogFragment.this);
+        }
+        else
+        {
+            editEventButton.setVisibility(View.GONE);
+            deleteEventButton.setVisibility(View.GONE);
+        }
         
         nameTextView.setText(event.getName());
         venueTextView.setText(event.getVenue());
@@ -183,6 +193,15 @@ public class EventDetailDialogFragment extends DialogFragment implements View.On
                         
                         if (mEventUpdateListener != null)
                             mEventUpdateListener.onEventDeleted();
+                        
+                        // update event reminder if user enable it
+                        if (SettingActivity.getBoolean(getActivity(), SettingActivity.KEY_EVENT_NOTIFICATION, false))
+                        {
+                            Intent broadcastIntent = new Intent(getActivity(), ReminderReceiver.class);
+                            broadcastIntent.setAction(ReminderReceiver.ACTION_UPDATE_EVENT_REMINDER);
+
+                            getActivity().sendBroadcast(broadcastIntent);
+                        }
                     }
                 });
                 

@@ -33,11 +33,18 @@ import android.util.Log;
  */
 public class ReminderService extends IntentService
 {
+    public static final String EXTRA_EVENT_ID     = "com.lugia.timetable.EventId";
     public static final String EXTRA_SUBJECT_CODE = "com.lugia.timetable.SubjectCode";
     public static final String EXTRA_HEADER       = "com.lugia.timetable.Header";
     public static final String EXTRA_CONTENT      = "com.lugia.timetable.Content";
+
+    public static final String ACTION_SCHEDULE_REMINDER = "com.lugia.timetable.SCHEDULE_REMINDER";
+    public static final String ACTION_EVENT_REMINDER    = "com.lugia.timetable.EVENT_REMINDER";
     
-    public static final int NOTIFICATION_ID = 1;
+    public static final int SCHEDULE_NOTIFICATION_ID = 1;
+    public static final int EVENT_NOTIFICATION_ID    = 2;
+    
+    private static final String TAG = "ReminderService";
     
     public ReminderService()
     {
@@ -47,21 +54,69 @@ public class ReminderService extends IntentService
     @Override
     protected void onHandleIntent(Intent intent)
     {
-        Log.d("ReminderService", "Handle intent");
+        String action = intent.getAction();
+        
+        Log.d("ReminderService", "Handle intent : " + action);
         
         Bundle extra = intent.getExtras();
         
         String subjectCode = extra.getString(EXTRA_SUBJECT_CODE);
         String header      = extra.getString(EXTRA_HEADER);
         String content     = extra.getString(EXTRA_CONTENT);
+
+        String boardcastIntent = null;
         
-        NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        Intent notificationIntent = new Intent();
+        Uri soundUri = null;
         
-        Intent notificationIntent = new Intent(ReminderService.this, SubjectDetailActivity.class);
-        notificationIntent.putExtra(SubjectDetailActivity.EXTRA_SUBJECT_CODE, subjectCode);
+        int notificationId;
+        boolean vibrate;
+        
+        if (action.equals(ACTION_SCHEDULE_REMINDER))
+        {
+            notificationId = SCHEDULE_NOTIFICATION_ID;
+            
+            vibrate = SettingActivity.getBoolean(ReminderService.this, SettingActivity.KEY_SCHEDULE_NOTIFY_VIBRATE, false);
+            
+            String soundUriStr = SettingActivity.getString(ReminderService.this, SettingActivity.KEY_SCHEDULE_NOTIFY_SOUND, "");
+            
+            notificationIntent.setClass(ReminderService.this, SubjectDetailActivity.class)
+                              .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                              .putExtra(SubjectDetailActivity.EXTRA_SUBJECT_CODE, subjectCode);
+            
+            soundUri = !TextUtils.isEmpty(soundUriStr) ? Uri.parse(soundUriStr) : null;
+            
+            boardcastIntent = ReminderReceiver.ACTION_UPDATE_SCHEDULE_REMINDER;
+        }
+        else if (action.equals(ACTION_EVENT_REMINDER))
+        {
+            long eventId = intent.getLongExtra(EXTRA_EVENT_ID, -1);
+            
+            notificationId = EVENT_NOTIFICATION_ID;
+            
+            vibrate = SettingActivity.getBoolean(ReminderService.this, SettingActivity.KEY_EVENT_NOTIFY_VIBRATE, false);
+
+            String soundUriStr = SettingActivity.getString(ReminderService.this, SettingActivity.KEY_EVENT_NOTIFY_SOUND, "");
+
+            notificationIntent.setClass(ReminderService.this, SubjectDetailActivity.class)
+                              .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                              .setAction(SubjectDetailActivity.ACTION_VIEW_EVENT)
+                              .putExtra(SubjectDetailActivity.EXTRA_EVENT_ID, eventId)
+                              .putExtra(SubjectDetailActivity.EXTRA_SUBJECT_CODE, subjectCode);
+
+            soundUri = !TextUtils.isEmpty(soundUriStr) ? Uri.parse(soundUriStr) : null;
+
+            boardcastIntent = ReminderReceiver.ACTION_UPDATE_EVENT_REMINDER;
+        }
+        else
+        {
+            Log.e(TAG, "Unknow action!");
+            
+            return;
+        }
         
         PendingIntent pendingIntent = PendingIntent.getActivity(ReminderService.this, 0, notificationIntent, 0);
-        
+
         Notification notification = new NotificationCompat.Builder(ReminderService.this)
                                                           .setSmallIcon(R.drawable.ic_notification_reminder)
                                                           .setTicker(header)
@@ -77,18 +132,19 @@ public class ReminderService extends IntentService
         notification.flags |= Notification.FLAG_SHOW_LIGHTS;
         
         // only vibrate when user enable it
-        if (SettingActivity.getBoolean(ReminderService.this, SettingActivity.KEY_NOTIFY_VIBRATE, false))
+        if (vibrate)
             notification.defaults |= Notification.DEFAULT_VIBRATE;
         
         // set the notification sound
-        String soundUri = SettingActivity.getString(ReminderService.this, SettingActivity.KEY_NOTIFY_SOUND, "");
-        notification.sound = TextUtils.isEmpty(soundUri) ? null : Uri.parse(soundUri);
+        notification.sound = soundUri;
+
+        NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         
-        manager.notify(NOTIFICATION_ID, notification);
+        manager.notify(notificationId, notification);
         
         // update the reminder, so it will notify user again on next schedule
         Intent broadcastIntent = new Intent(ReminderService.this, ReminderReceiver.class);
-        broadcastIntent.setAction(ReminderReceiver.ACTION_UPDATE_REMINDER);
+        broadcastIntent.setAction(boardcastIntent);
         
         sendBroadcast(broadcastIntent);
     }

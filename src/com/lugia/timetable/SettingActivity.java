@@ -36,10 +36,17 @@ import android.text.TextUtils;
 
 public class SettingActivity extends Activity
 {
-    public static final String KEY_NOTIFICATION   = "preference_notification";
-    public static final String KEY_NOTIFY_SOUND   = "preference_notify_sound";
-    public static final String KEY_NOTIFY_VIBRATE = "preference_notify_vibrate";
-    public static final String KEY_NOTIFY_BEFORE  = "preference_notify_before";
+    // Schedule
+    public static final String KEY_SCHEDULE_NOTIFICATION   = "preference_schedule_notification";
+    public static final String KEY_SCHEDULE_NOTIFY_SOUND   = "preference_schedule_notify_sound";
+    public static final String KEY_SCHEDULE_NOTIFY_VIBRATE = "preference_schedule_notify_vibrate";
+    public static final String KEY_SCHEDULE_NOTIFY_BEFORE  = "preference_schedule_notify_before";
+    
+    // Event
+    public static final String KEY_EVENT_NOTIFICATION   = "preference_event_notification";
+    public static final String KEY_EVENT_NOTIFY_SOUND   = "preference_event_notify_sound";
+    public static final String KEY_EVENT_NOTIFY_VIBRATE = "preference_event_notify_vibrate";
+    public static final String KEY_EVENT_NOTIFY_BEFORE  = "preference_event_notify_before";
     
     public static final String SHARED_PREFERENCES_NAME = "com.lugia.timetable_preferences";
     
@@ -86,10 +93,17 @@ public class SettingActivity extends Activity
     // ======================================================
     public static class SettingPreferenceFragment extends PreferenceFragment implements OnPreferenceChangeListener
     {
-        private CheckBoxPreference mNotification;
-        private RingtonePreference mNotifySound;
-        private CheckBoxPreference mNotifyVibrate;
-        private ListPreference mNotifyBefore;
+        // schedule
+        private CheckBoxPreference mScheduleNotification;
+        private RingtonePreference mScheduleNotifySound;
+        private CheckBoxPreference mScheduleNotifyVibrate;
+        private ListPreference     mScheduleNotifyBefore;
+        
+        // Event
+        private CheckBoxPreference mEventNotification;
+        private RingtonePreference mEventNotifySound;
+        private CheckBoxPreference mEventNotifyVibrate;
+        private ListPreference     mEventNotifyBefore;
         
         @Override
         public void onCreate(Bundle savedInstanceState)
@@ -103,15 +117,29 @@ public class SettingActivity extends Activity
             
             final PreferenceScreen preferenceScreen = getPreferenceScreen();
             
-            mNotification  = (CheckBoxPreference)preferenceScreen.findPreference(KEY_NOTIFICATION);
-            mNotifySound   = (RingtonePreference)preferenceScreen.findPreference(KEY_NOTIFY_SOUND);
-            mNotifyVibrate = (CheckBoxPreference)preferenceScreen.findPreference(KEY_NOTIFY_VIBRATE);
-            mNotifyBefore  = (ListPreference)preferenceScreen.findPreference(KEY_NOTIFY_BEFORE);
+            String soundUri;
             
-            String soundUri = SettingActivity.getString(getActivity(), KEY_NOTIFY_SOUND, "");
+            // Schedule
+            mScheduleNotification  = (CheckBoxPreference)preferenceScreen.findPreference(KEY_SCHEDULE_NOTIFICATION);
+            mScheduleNotifySound   = (RingtonePreference)preferenceScreen.findPreference(KEY_SCHEDULE_NOTIFY_SOUND);
+            mScheduleNotifyVibrate = (CheckBoxPreference)preferenceScreen.findPreference(KEY_SCHEDULE_NOTIFY_VIBRATE);
+            mScheduleNotifyBefore  = (ListPreference)preferenceScreen.findPreference(KEY_SCHEDULE_NOTIFY_BEFORE);
             
-            mNotifySound.setSummary(getRingtoneSummary(soundUri));
-            mNotifyBefore.setSummary(mNotifyBefore.getEntry());
+            soundUri = SettingActivity.getString(getActivity(), KEY_SCHEDULE_NOTIFY_SOUND, "");
+            
+            mScheduleNotifySound.setSummary(getRingtoneSummary(soundUri));
+            mScheduleNotifyBefore.setSummary(mScheduleNotifyBefore.getEntry());
+            
+            // Event
+            mEventNotification  = (CheckBoxPreference)preferenceScreen.findPreference(KEY_EVENT_NOTIFICATION);
+            mEventNotifySound   = (RingtonePreference)preferenceScreen.findPreference(KEY_EVENT_NOTIFY_SOUND);
+            mEventNotifyVibrate = (CheckBoxPreference)preferenceScreen.findPreference(KEY_EVENT_NOTIFY_VIBRATE);
+            mEventNotifyBefore  = (ListPreference)preferenceScreen.findPreference(KEY_EVENT_NOTIFY_BEFORE);
+
+            soundUri = SettingActivity.getString(getActivity(), KEY_EVENT_NOTIFY_SOUND, "");
+
+            mEventNotifySound.setSummary(getRingtoneSummary(soundUri));
+            mEventNotifyBefore.setSummary(mEventNotifyBefore.getEntry());
             
             setOnPreferenceChangeListener(SettingPreferenceFragment.this);
             
@@ -130,36 +158,67 @@ public class SettingActivity extends Activity
         public boolean onPreferenceChange(Preference preference, Object newValue)
         {
             // use to determine we need setup the reminder again or not
-            boolean updateReminder = false;
+            boolean updateScheduleReminder = false;
+            boolean updateEventReminder = false;
             
-            if (preference == mNotification)
+            // Schedule
+            if (preference == mScheduleNotification)
             {
-                mNotification.setChecked((Boolean)newValue);
+                mScheduleNotification.setChecked((Boolean) newValue);
                 
                 // update reminder, either enable or cancel
-                updateReminder = true;
+                updateScheduleReminder = true;
             }
-            else if (preference == mNotifySound)
+            else if (preference == mScheduleNotifySound)
             {
-                mNotifySound.setSummary(getRingtoneSummary((String)newValue));
+                mScheduleNotifySound.setSummary(getRingtoneSummary((String) newValue));
             }
-            else if (preference == mNotifyBefore)
+            else if (preference == mScheduleNotifyBefore)
             {
-                mNotifyBefore.setValue((String)newValue);
-                mNotifyBefore.setSummary(mNotifyBefore.getEntry());
+                mScheduleNotifyBefore.setValue((String) newValue);
+                mScheduleNotifyBefore.setSummary(mScheduleNotifyBefore.getEntry());
                 
                 // update reminder, to match user setting
-                updateReminder = true;
+                updateScheduleReminder = true;
+            }
+            
+            // Event
+            if (preference == mEventNotification)
+            {
+                mEventNotification.setChecked((Boolean) newValue);
+
+                // update reminder, either enable or cancel
+                updateEventReminder = true;
+            }
+            else if (preference == mEventNotifySound)
+            {
+                mEventNotifySound.setSummary(getRingtoneSummary((String) newValue));
+            }
+            else if (preference == mEventNotifyBefore)
+            {
+                mEventNotifyBefore.setValue((String) newValue);
+                mEventNotifyBefore.setSummary(mEventNotifyBefore.getEntry());
+
+                // update reminder, to match user setting
+                updateEventReminder = true;
             }
             
             updateChildPreference();
             
             // update the reminder if it is require
-            if (updateReminder)
+            if (updateScheduleReminder)
             {
                 Intent broadcastIntent = new Intent(getActivity(), ReminderReceiver.class);
-                broadcastIntent.setAction(ReminderReceiver.ACTION_UPDATE_REMINDER);
+                broadcastIntent.setAction(ReminderReceiver.ACTION_UPDATE_SCHEDULE_REMINDER);
                 
+                getActivity().sendBroadcast(broadcastIntent);
+            }
+            
+            if (updateEventReminder)
+            {
+                Intent broadcastIntent = new Intent(getActivity(), ReminderReceiver.class);
+                broadcastIntent.setAction(ReminderReceiver.ACTION_UPDATE_EVENT_REMINDER);
+
                 getActivity().sendBroadcast(broadcastIntent);
             }
             
@@ -168,9 +227,13 @@ public class SettingActivity extends Activity
         
         public void setOnPreferenceChangeListener(OnPreferenceChangeListener listener)
         {
-            mNotification.setOnPreferenceChangeListener(listener);
-            mNotifySound.setOnPreferenceChangeListener(listener);
-            mNotifyBefore.setOnPreferenceChangeListener(listener);
+            mScheduleNotification.setOnPreferenceChangeListener(listener);
+            mScheduleNotifySound.setOnPreferenceChangeListener(listener);
+            mScheduleNotifyBefore.setOnPreferenceChangeListener(listener);
+
+            mEventNotification.setOnPreferenceChangeListener(listener);
+            mEventNotifySound.setOnPreferenceChangeListener(listener);
+            mEventNotifyBefore.setOnPreferenceChangeListener(listener);
         }
         
         private String getRingtoneSummary(String soundUri)
@@ -188,18 +251,16 @@ public class SettingActivity extends Activity
         
         private void updateChildPreference()
         {
-            if (mNotification.isChecked())
-            {
-                mNotifySound.setEnabled(true);
-                mNotifyVibrate.setEnabled(true);
-                mNotifyBefore.setEnabled(true);
-            }
-            else
-            {
-                mNotifySound.setEnabled(false);
-                mNotifyVibrate.setEnabled(false);
-                mNotifyBefore.setEnabled(false);
-            }
+            final boolean scheduleNotificationEnabled = mScheduleNotification.isChecked();
+            final boolean eventNotificationEnabled = mEventNotification.isChecked();
+
+            mScheduleNotifySound.setEnabled(scheduleNotificationEnabled);
+            mScheduleNotifyVibrate.setEnabled(scheduleNotificationEnabled);
+            mScheduleNotifyBefore.setEnabled(scheduleNotificationEnabled);
+
+            mEventNotifySound.setEnabled(eventNotificationEnabled);
+            mEventNotifyVibrate.setEnabled(eventNotificationEnabled);
+            mEventNotifyBefore.setEnabled(eventNotificationEnabled);
         }
     }
 }

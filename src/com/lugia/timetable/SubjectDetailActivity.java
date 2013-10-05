@@ -41,12 +41,16 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class SubjectDetailActivity extends FragmentActivity
 {
     private static Subject mSubject;
     
+    public static final String EXTRA_EVENT_ID     = "com.lugia.timetable.EventId";
     public static final String EXTRA_SUBJECT_CODE = "com.lugia.timetable.SubjectCode";
+    
+    public static final String ACTION_VIEW_EVENT  = "com.lugia.timetabele.ViewEvent";
     
     public static final String[] WEEKS = new String[]
     {
@@ -90,7 +94,7 @@ public class SubjectDetailActivity extends FragmentActivity
         TextView creditHoursTextView     = (TextView)findViewById(R.id.text_credit_hour);
 
         Bundle intentExtra = getIntent().getExtras();
-
+        
         SubjectList subjectList = SubjectList.getInstance(SubjectDetailActivity.this);
         
         String subjectCode = intentExtra.getString(EXTRA_SUBJECT_CODE);
@@ -115,6 +119,31 @@ public class SubjectDetailActivity extends FragmentActivity
         lectureSectionTextView.setText(lectureSection);
         tutorialSectionTextView.setText(tutorialSection);
         creditHoursTextView.setText(creditHours + " Credit Hours");
+        
+        // user click the event reminder notification, show the event detail
+        if (getIntent().getAction() != null && getIntent().getAction().equals(ACTION_VIEW_EVENT))
+        {
+            long eventId = intentExtra.getLong(EXTRA_EVENT_ID, -1);
+            
+            Event event = mSubject.findEvent(eventId);
+            
+            if (event != null)
+            {
+                Bundle args = new Bundle();
+
+                args.putString(EventDetailDialogFragment.EXTRA_SUBJECT_CODE, mSubject.getSubjectCode());
+                args.putLong(EventDetailDialogFragment.EXTRA_EVENT_ID, event.getId());
+                
+                // dont allow event editing in such situation
+                args.putBoolean(EventDetailDialogFragment.EXTRA_EDITABLE, false);
+                
+                EventDetailDialogFragment f = EventDetailDialogFragment.newInstance(args);
+                
+                f.show(getFragmentManager(), event.getName());
+            }
+            else
+                Toast.makeText(SubjectDetailActivity.this, "No such event.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -322,7 +351,7 @@ public class SubjectDetailActivity extends FragmentActivity
                 mEventAdapter.notifyDataSetChanged();
             }
         }
-
+        
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id)
         {

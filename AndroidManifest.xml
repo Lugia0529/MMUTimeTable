@@ -71,7 +71,8 @@
         <receiver android:name="com.lugia.timetable.ReminderReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="com.lugia.timetable.UPDATE_REMINDER" />
+                <action android:name="com.lugia.timetable.UPDATE_SCHEDULE_REMINDER" />
+                <action android:name="com.lugia.timetable.UPDATE_EVENT_REMINDER" />
             </intent-filter>
         </receiver>
         
