@@ -14,19 +14,33 @@
     See the License for the specific language governing permissions and 
     limitations under the License.
  -->
- 
+
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingTop="2dip"
+    android:paddingBottom="2dip"
     android:orientation="vertical">
     
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:background="#FFAAAAAA"
+    <TextView
+        android:id="@+id/text_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|left"
+        android:text="@string/text_list_header"
+        android:textColor="#FF000000"
+        android:textIsSelectable="false"
+        style="@style/ListHeaderText"
     />
-
+    
+    <View
+        android:id="@+id/view_divider"
+        android:layout_width="match_parent"
+        android:layout_height="2dip"
+        android:layout_marginTop="2dip"
+        android:layout_marginLeft="8dip"
+        android:background="#FF000000"
+    />
+    
 </LinearLayout>

@@ -18,6 +18,7 @@ package com.lugia.timetable;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import android.app.ActionBar;
 import android.content.Context;
@@ -37,7 +38,7 @@ import android.view.ViewGroup;
 import android.content.Intent;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -224,6 +225,8 @@ public class SubjectDetailActivity extends FragmentActivity
     // Fragment class for schedule list
     public static class ScheduleFragment extends Fragment
     {
+        private ScheduleAdapter mScheduleAdapter;
+        
         public static ScheduleFragment newInstance(Bundle args)
         {
             ScheduleFragment fragment = new ScheduleFragment();
@@ -237,72 +240,177 @@ public class SubjectDetailActivity extends FragmentActivity
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             View view = inflater.inflate(R.layout.fragment_schedule, container, false);
-            
-            view.findViewById(R.id.view_lecture_divider).setBackgroundColor(mSubject.getColor());
-            view.findViewById(R.id.view_tutorial_divider).setBackgroundColor(mSubject.getColor());
-            
-            LinearLayout lectureSectionLayout = (LinearLayout)view.findViewById(R.id.layout_lecture_section);
-            LinearLayout tutorialSectionLayout = (LinearLayout)view.findViewById(R.id.layout_tutorial_section);
-            
-            // hide the lecture section detail if this course dont have lecture section
-            if (!mSubject.hasLectureSection())
-                lectureSectionLayout.setVisibility(View.GONE);
 
-            // hide the tutorial section detail if this course dont have tutorial section
-            if (!mSubject.hasTutorialSection())
-                tutorialSectionLayout.setVisibility(View.GONE);
+            ListView listView = (ListView)view.findViewById(R.id.list_schedule);
 
-            createTimeTableList(mSubject, lectureSectionLayout, tutorialSectionLayout);
+            mScheduleAdapter = new ScheduleAdapter(getActivity());
+            mScheduleAdapter.addSchedules(mSubject.getSchedules());
+            
+            listView.setEmptyView(view.findViewById(R.id.empty));
+            listView.setAdapter(mScheduleAdapter);
             
             return view;
         }
-
-        private void createTimeTableList(Subject subject, LinearLayout lectureSectionLayout, LinearLayout tutorialSectionLayout)
+        
+        class ScheduleAdapter extends BaseAdapter
         {
-            ArrayList<Schedule> schedules = subject.getSchedules();
+            private int mLectureCount;
+            private int mTutorialCount;
             
-            int lectureCount = 0;
-            int tutorialCount = 0;
+            private Context mContext;
             
-            LayoutInflater inflater = getActivity().getLayoutInflater();
+            private List<Schedule> mList;
             
-            for (Schedule schedule : schedules)
+            public ScheduleAdapter(Context context)
             {
-                View view = inflater.inflate(R.layout.item_time, null);
-
-                TextView dayTextView = (TextView)view.findViewById(R.id.text_day);
-                TextView timeTextView = (TextView)view.findViewById(R.id.text_time);
-                TextView roomTextView = (TextView)view.findViewById(R.id.text_room);
-
-                dayTextView.setText("Day: " + WEEKS[schedule.getDay()]);
-                timeTextView.setText("Time: " + TIMES[schedule.getTime()] + " - " + TIMES[schedule.getTime() + schedule.getLength()]);
-                roomTextView.setText("Room: " + schedule.getRoom());
-
-                if (schedule.getSection() == Schedule.LECTURE_SECTION && subject.hasLectureSection())
+                mList = new ArrayList<Schedule>();
+                
+                mContext = context;
+            }
+            
+            public void addSchedule(Schedule schedule)
+            {
+                if (schedule == null)
+                    throw new IllegalArgumentException("schedule cannot be null!");
+                
+                if (schedule.getSection() == Schedule.LECTURE_SECTION)
                 {
-                    if (lectureCount++ > 0)
-                    {
-                        View divider = inflater.inflate(R.layout.item_divider, null);
-                        lectureSectionLayout.addView(divider);
-                    }
-
-                    lectureSectionLayout.addView(view);
-
-                    continue;
+                    // lazily adding the header object
+                    if (mLectureCount == 0)
+                        mList.add(0, null);
+                    
+                    mList.add(mLectureCount + 1, schedule);
+                    mLectureCount++;
                 }
-
-                if (schedule.getSection() == Schedule.TUTORIAL_SECTION && subject.hasTutorialSection())
+                else if (schedule.getSection() == Schedule.TUTORIAL_SECTION)
                 {
-                    if (tutorialCount++ > 0)
-                    {
-                        View divider = inflater.inflate(R.layout.item_divider, null);
-                        tutorialSectionLayout.addView(divider);
-                    }
-
-                    tutorialSectionLayout.addView(view);
-
-                    continue;
+                    int pos = getBasePosition(Schedule.TUTORIAL_SECTION);
+                    
+                    // lazily adding the header object
+                    if (mTutorialCount == 0)
+                        mList.add(pos, null);
+                    
+                    mList.add(pos + mTutorialCount + 1, schedule);
+                    mTutorialCount++;
                 }
+                else
+                    throw new IllegalArgumentException("Invalid schedule section: " + schedule.getSection());
+            }
+            
+            public void addSchedules(List<Schedule> schedules)
+            {
+                for (Schedule schedule : schedules)
+                    addSchedule(schedule);
+            }
+            
+            @Override
+            public int getCount()
+            {
+                return mList.size();
+            }
+            
+            @Override
+            public Object getItem(int position)
+            {
+                return mList.get(position);
+            }
+
+            @Override
+            public long getItemId(int position)
+            {
+                return position;
+            }
+
+            @Override
+            public int getViewTypeCount()
+            {
+                return 2;
+            }
+            
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent)
+            {
+                if (convertView == null)
+                {
+                    LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+                    Schedule schedule = mList.get(position);
+                    
+                    // separator
+                    if (schedule == null)
+                    {
+                        convertView = inflater.inflate(R.layout.item_section_divider, null);
+                        
+                        TextView headerTextView = (TextView)convertView.findViewById(R.id.text_header);
+                        View dividerView = convertView.findViewById(R.id.view_divider);
+                        
+                        headerTextView.setTextColor(mSubject.getColor());
+                        dividerView.setBackgroundColor(mSubject.getColor());
+                        
+                        if (position == getBasePosition(Schedule.LECTURE_SECTION))
+                            headerTextView.setText("Lecture Section");
+                        else if (position == getBasePosition(Schedule.TUTORIAL_SECTION))
+                            headerTextView.setText("Tutorial Section");
+                    }
+                    else
+                    {
+                        convertView = inflater.inflate(R.layout.item_schedule, null);
+                        
+                        TextView dayTextView = (TextView)convertView.findViewById(R.id.text_day);
+                        TextView timeTextView = (TextView)convertView.findViewById(R.id.text_time);
+                        TextView roomTextView = (TextView)convertView.findViewById(R.id.text_room);
+                        
+                        dayTextView.setText("Day: " + WEEKS[schedule.getDay()]);
+                        timeTextView.setText("Time: " + TIMES[schedule.getTime()] + " - " + TIMES[schedule.getTime() + schedule.getLength()]);
+                        roomTextView.setText("Room: " + schedule.getRoom());
+                        
+                        if ((hasLectureSection() && position == mLectureCount) || position == mList.size() - 1)
+                        {
+                            View dividerView = convertView.findViewById(R.id.view_divider);
+                            dividerView.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                }
+                
+                return convertView;
+            }
+            
+            @Override
+            public boolean hasStableIds()
+            {
+                return false;
+            }
+
+            @Override
+            public boolean isEnabled(int position)
+            {
+                return false;
+            }
+            
+            public boolean hasLectureSection()
+            {
+                return mLectureCount > 0;
+            }
+            
+            public boolean hasTutorialSection()
+            {
+                return mTutorialCount > 0;
+            }
+            
+            public int getBasePosition(int section)
+            {
+                if (section == Schedule.LECTURE_SECTION)
+                    return 0;
+                
+                if (section == Schedule.TUTORIAL_SECTION)
+                {
+                    if (hasLectureSection())
+                        return mLectureCount + 1;
+                    else
+                        return 0;
+                }
+                
+                return -1;
             }
         }
     }
