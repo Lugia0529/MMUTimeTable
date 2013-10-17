@@ -23,14 +23,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.util.Calendar;
 
 public class EventDetailDialogFragment extends DialogFragment implements View.OnClickListener
 {
@@ -72,9 +69,9 @@ public class EventDetailDialogFragment extends DialogFragment implements View.On
         
         int color = subject.getColor();
         
-        String date  = generateDateString(event.getYear(), event.getMonth(), event.getDay());
-        String start = generateTimeString(event.getStartHour(), event.getStartMinute());
-        String end   = generateTimeString(event.getEndHour(), event.getEndMinute());
+        String date  = Utils.getDateString("EE, MMM dd, yyyy", event.getYear(), event.getMonth(), event.getDay());
+        String start = Utils.getTimeString("h:mm aa", event.getStartHour(), event.getStartMinute());
+        String end   = Utils.getTimeString("h:mm aa", event.getEndHour(), event.getEndMinute());
         
         String[] eventType = getActivity().getResources().getStringArray(R.array.event_type_string);
         
@@ -122,29 +119,6 @@ public class EventDetailDialogFragment extends DialogFragment implements View.On
         return view;
     }
     
-    private String generateDateString(int year, int month, int day)
-    {
-        final Calendar calendar = Calendar.getInstance();
-
-        // get the date string
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month);
-        calendar.set(Calendar.DAY_OF_MONTH, day);
-
-        return DateFormat.format("EE, MMM dd, yyyy", calendar).toString();
-    }
-    
-    private String generateTimeString(int hour, int minute)
-    {
-        final Calendar calendar = Calendar.getInstance();
-        
-        // get the start time string
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-
-        return DateFormat.format("h:mm aa", calendar).toString();
-    }
-
     @Override
     public void onClick(View v)
     {

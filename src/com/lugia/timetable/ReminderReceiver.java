@@ -210,9 +210,9 @@ public class ReminderReceiver extends BroadcastReceiver
                 {
                     targetTimeMillies = eventCalendar.getTimeInMillis();
 
-                    String date  = generateDateString(event.getYear(), event.getMonth(), event.getDay());
-                    String start = generateTimeString(event.getStartHour(), event.getStartMinute());
-                    String end   = generateTimeString(event.getEndHour(), event.getEndMinute());
+                    String date  = Utils.getDateString("EE, MMM dd", event.getYear(), event.getMonth(), event.getDay());
+                    String start = Utils.getTimeString("h:mm aa", event.getStartHour(), event.getStartMinute());
+                    String end   = Utils.getTimeString("h:mm aa", event.getEndHour(), event.getEndMinute());
                     
                     eventId = event.getId();
                     
@@ -262,28 +262,5 @@ public class ReminderReceiver extends BroadcastReceiver
         PendingIntent pendingIntent = PendingIntent.getService(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         manager.cancel(pendingIntent);
-    }
-
-    private String generateDateString(int year, int month, int day)
-    {
-        final Calendar calendar = Calendar.getInstance();
-
-        // get the date string
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month);
-        calendar.set(Calendar.DAY_OF_MONTH, day);
-
-        return DateFormat.format("EE, MMM dd", calendar).toString();
-    }
-
-    private String generateTimeString(int hour, int minute)
-    {
-        final Calendar calendar = Calendar.getInstance();
-
-        // get the start time string
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-
-        return DateFormat.format("h:mm aa", calendar).toString();
     }
 }

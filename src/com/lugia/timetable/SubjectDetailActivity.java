@@ -17,7 +17,6 @@
 package com.lugia.timetable;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import android.app.ActionBar;
@@ -29,7 +28,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -505,27 +503,10 @@ public class SubjectDetailActivity extends FragmentActivity
 
                 if (event != null)
                 {
-                    final Calendar calendar = Calendar.getInstance();
-
-                    // get the date string
-                    calendar.set(Calendar.YEAR, event.getYear());
-                    calendar.set(Calendar.MONTH, event.getMonth());
-                    calendar.set(Calendar.DAY_OF_MONTH, event.getDay());
-
-                    String dateStr = DateFormat.format("EE, MMM dd, yyyy", calendar).toString();
-
-                    // get the start time string
-                    calendar.set(Calendar.HOUR_OF_DAY, event.getStartHour());
-                    calendar.set(Calendar.MINUTE, event.getStartMinute());
-
-                    String timeStartStr = DateFormat.format("h:mm aa", calendar).toString();
-
-                    // get the end time string
-                    calendar.set(Calendar.HOUR_OF_DAY, event.getEndHour());
-                    calendar.set(Calendar.MINUTE, event.getEndMinute());
-
-                    String timeEndStr = DateFormat.format("h:mm aa", calendar).toString();
-
+                    String dateStr = Utils.getDateString("EE, MMM dd, yyyy", event.getYear(), event.getMonth(), event.getDay());
+                    String timeStartStr = Utils.getTimeString("h:mm aa", event.getStartHour(), event.getEndMinute());
+                    String timeEndStr = Utils.getTimeString("h:mm aa", event.getEndHour(), event.getEndMinute());
+                    
                     TextView nameTextView = (TextView)convertView.findViewById(R.id.text_name);
                     TextView venueTextView = (TextView)convertView.findViewById(R.id.text_venue);
                     TextView timeTextView = (TextView)convertView.findViewById(R.id.text_time);

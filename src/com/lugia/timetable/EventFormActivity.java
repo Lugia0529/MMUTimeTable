@@ -135,10 +135,10 @@ public class EventFormActivity extends Activity
             mTime[2] = mTime[0] + 1;
             mTime[3] = 0;
         }
-
-        mDateButton.setText(getFormattedDate(mDate[0], mDate[1], mDate[2]));
-        mTimeStartButton.setText(getFormattedTime(mTime[0], mTime[1]));
-        mTimeEndButton.setText(getFormattedTime(mTime[2], mTime[3]));
+        
+        mDateButton.setText(Utils.getDateString("EEEE, MMMM dd, yyyy", mDate[0], mDate[1], mDate[2]));
+        mTimeStartButton.setText(Utils.getTimeString("h:mm aa", mTime[0], mTime[1]));
+        mTimeEndButton.setText(Utils.getTimeString("h:mm aa", mTime[2], mTime[3]));
     }
 
     public void showDatePickerDialog(View view)
@@ -223,31 +223,10 @@ public class EventFormActivity extends Activity
             mTime[2] = mTime[0];
             mTime[3] = mTime[1];
 
-            mTimeEndButton.setText(getFormattedTime(mTime[2], mTime[3]));
+            mTimeEndButton.setText(Utils.getTimeString("h:mm aa", mTime[2], mTime[3]));
         }
     }
-
-    private CharSequence getFormattedDate(int year, int month, int day)
-    {
-        final Calendar calendar = Calendar.getInstance();
-
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month);
-        calendar.set(Calendar.DAY_OF_MONTH, day);
-
-        return DateFormat.format("EEEE, MMMM dd, yyyy", calendar);
-    }
-
-    private CharSequence getFormattedTime(int hour, int minute)
-    {
-        final Calendar calendar = Calendar.getInstance();
-
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-
-        return DateFormat.format("h:mm aa", calendar);
-    }
-
+    
     private class DateDialogFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener
     {
         @Override
@@ -263,7 +242,7 @@ public class EventFormActivity extends Activity
             mDate[1] = month;
             mDate[2] = day;
 
-            mDateButton.setText(getFormattedDate(year, month, day));
+            mDateButton.setText(Utils.getDateString("EEEE, MMMM dd, yyyy", year, month, day));
         }
     }
 
@@ -288,14 +267,14 @@ public class EventFormActivity extends Activity
                 mTime[0] = hourOfDay;
                 mTime[1] = minute;
 
-                mTimeStartButton.setText(getFormattedTime(hourOfDay, minute));
+                mTimeStartButton.setText(Utils.getTimeString("h:mm aa", hourOfDay, minute));
             }
             else
             {
                 mTime[2] = hourOfDay;
                 mTime[3] = minute;
 
-                mTimeEndButton.setText(getFormattedTime(hourOfDay, minute));
+                mTimeEndButton.setText(Utils.getTimeString("h:mm aa", hourOfDay, minute));
             }
 
             checkTime();
