@@ -152,7 +152,8 @@
     <string name="preference_notify_sound_title">Sound</string>
     <string name="preference_notify_vibrate_title">Vibrate</string>
     <string name="preference_notify_before_title">Notify before</string>
-    
+    <string name="text_section">Section</string>
+
     <string-array name="event_type_string">
         <item>Class replacement</item>
         <item>Homework</item>

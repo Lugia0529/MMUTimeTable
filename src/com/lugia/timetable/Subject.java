@@ -89,6 +89,16 @@ final class Subject implements Parcelable
         return mLectureSection;
     }
     
+    public String getSection(int type)
+    {
+        if (type == Schedule.LECTURE_SECTION)
+            return mLectureSection;
+        else if (type == Schedule.TUTORIAL_SECTION)
+            return mTutorialSection;
+        else
+            return "";
+    }
+    
     public String getTutorialSection()
     {
         return mTutorialSection;

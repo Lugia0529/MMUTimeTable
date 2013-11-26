@@ -22,8 +22,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,7 +32,7 @@ import android.widget.Toast;
 /**
  * Main Activity
  */
-public class MasterActivity extends FragmentActivity implements ActionBar.OnNavigationListener, DayView.OnDayChangeListener
+public class MasterActivity extends FragmentActivity implements ActionBar.OnNavigationListener, TimeTableLayout.OnDayChangedListener
 {
     private TimeTableSpinnerAdapter mSpinnerAdapter;
     
@@ -53,6 +53,9 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
     
     private static final String TAG = "MasterActivity";
     
+    private TimeTableFragment mTimeTableFragment;
+    private SubjectListFragment mSubjectListFragment;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -70,23 +73,21 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
         
         mFilename = null;
         
+        mTimeTableFragment = new TimeTableFragment();
+        mSubjectListFragment = new SubjectListFragment();
+        
+        getSupportFragmentManager()
+            .beginTransaction()
+            .add(R.id.container, mTimeTableFragment, "TimeTable")
+            .add(R.id.container, mSubjectListFragment, "SubjectList")
+            .hide(mSubjectListFragment)
+            .commit();
+        
         mSpinnerAdapter = new TimeTableSpinnerAdapter(MasterActivity.this, actionBar.getSelectedNavigationIndex());
+        mSpinnerAdapter.setViewType(NAV_DAY);
         
         // Set up the dropdown list navigation in the action bar.
         actionBar.setListNavigationCallbacks(mSpinnerAdapter, this);
-    }
-    
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        
-        // force fragment to reload every time we back to this activity
-        /* TODO:
-         * actually we should not force fragment to reload every time we back to this activity, 
-         * fragment should be reloaded when user change file or something.
-         */
-        loadFragment(getActionBar().getSelectedNavigationIndex());
     }
     
     @Override
@@ -142,8 +143,8 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
             
             case REQUEST_CODE_DOWNLOAD_DATA:
             {
-                if (mFilename != null)
-                    mFilename = null;
+                // recreate the entire activity
+                recreate();
                 
                 break;
             }
@@ -190,45 +191,44 @@ public class MasterActivity extends FragmentActivity implements ActionBar.OnNavi
         return false;
     }
     
-    public void onDayChange(int day)
+    @Override
+    public void onDayChanged(int day)
     {
         Log.d(TAG, "onDayChange: " + day);
         
         mSpinnerAdapter.setCurrentDay(day);
     }
     
-    private void loadFragment(int position)
-    {
-        Fragment fragment = null;
-        
-        switch (position)
-        {
-            case NAV_DAY:
-                fragment = new DayFragment();
-                break;
-           
-            case NAV_WEEK:
-                fragment = new WeekFragment();
-                break;
-            
-            case NAV_LIST:
-                fragment = new SubjectListFragment();
-                break;
-                
-            default:
-                return;
-        }
-        
-        getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
-        
-        mSpinnerAdapter.setViewType(position);
-    }
-    
     public boolean onNavigationItemSelected(int position, long id)
     {
         // When the given dropdown item is selected, show its contents in the
         // container view.
-        loadFragment(position);
+        
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+
+        if (position == NAV_DAY || position == NAV_WEEK)
+        {
+            mTimeTableFragment.setDisplayType(position == NAV_DAY ? TimeTableLayout.TYPE_DAY : TimeTableLayout.TYPE_WEEK);
+            
+            if (mTimeTableFragment.isHidden())
+            {
+                transaction.hide(mSubjectListFragment);
+                transaction.show(mTimeTableFragment);
+            }
+        }
+        else if (position == NAV_LIST)
+        {
+            if (mSubjectListFragment.isHidden())
+            {
+                transaction.hide(mTimeTableFragment);
+                transaction.show(mSubjectListFragment);
+            }
+        }
+
+        transaction.commit();
+
+        mSpinnerAdapter.setViewType(position);
         
         return true;
     }
