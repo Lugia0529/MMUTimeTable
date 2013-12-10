@@ -721,9 +721,19 @@ public class TimeTableLayout extends ViewGroup
             if (e.getX() <= mTimeCellWidth)
                 return true;
             
+            float y = e.getY();
+            
+            // adjust the y position if header is visible
+            if (mShowHeader)
+                y -= mHeaderHeight;
+            
+            // dont handle click event if the click is happen on the header area
+            if (mShowHeader && y <= 0)
+                return true;
+            
             // try to figure out where user click
             int day = (((int)e.getX() - mTimeCellWidth) / mCellWidth) + 1;
-            int time = ((mScrollY + (int)e.getY()) / mCellHeight) + mStartTime;
+            int time = ((mScrollY + (int)y) / mCellHeight) + mStartTime;
             
             if (mDisplayType == TYPE_DAY)
                 day = mCurrentDay;
