@@ -87,6 +87,10 @@ public class TimeTableFragment extends Fragment implements TimeTableLayout.OnIte
 
             default:
                 mTimeTable.setCurrentDay(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1);
+                
+                // scroll to current time position for user convenient
+                mTimeTable.scrollToCurrentTime();
+                break;
         }
         
         return view;

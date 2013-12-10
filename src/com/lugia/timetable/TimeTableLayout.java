@@ -38,6 +38,8 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.OverScroller;
 
+import java.util.Calendar;
+
 public class TimeTableLayout extends ViewGroup
 {
     // AttributeSet
@@ -248,6 +250,10 @@ public class TimeTableLayout extends ViewGroup
         // scroll x is only for day display
         if (mDisplayType == TYPE_DAY)
             mScrollX = (mCurrentDay - 1) * mCellWidth;
+        
+        // prevention for scroll y overflow
+        if (mScrollY + mHeight >= mActualHeight)
+            mScrollY = mActualHeight - mHeight;
         
         // record our dimensions
         setMeasuredDimension(MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(mHeight, MeasureSpec.EXACTLY));
@@ -675,6 +681,23 @@ public class TimeTableLayout extends ViewGroup
         }
         
         return null;
+    }
+    
+    public void scrollToCurrentTime()
+    {
+        Calendar calendar = Calendar.getInstance();
+        
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        
+        if (hour >= mStartTime)
+        {
+            mScrollY = (hour - mStartTime) * mCellHeight;
+            
+            mScrollY += (mCellHeight / 60) * minute;
+            
+            invalidate();
+        }
     }
     
     // -----------------------------------------
