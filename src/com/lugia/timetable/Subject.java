@@ -176,12 +176,10 @@ final class Subject implements Parcelable
             if (sTime.getDay() != day)
                 continue;
             
-            // actually time is display in ascending order, this check maybe a litter over. 
-            if (Math.abs(time - sTime.getTime()) == 1)
+            // we assume that the system does display the time in ascending order
+            // so we can directly combine them into one
+            if (sTime.getTime() + sTime.getLength() == time)
             {
-                if (time < sTime.getTime())
-                    sTime.setTime(time);
-                
                 sTime.setLength(sTime.getLength() + 1);
                 
                 return;
