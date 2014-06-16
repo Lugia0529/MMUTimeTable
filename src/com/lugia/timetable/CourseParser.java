@@ -52,22 +52,6 @@ public class CourseParser
         "SAT"
     };
     
-    /**
-     * Default color assign to subject.
-     */
-    private static final int[] BG_COLORS = new int[]
-    {
-        0xFFCE2029, // Fire Engine Red 
-        0xFF1CA778, // Green (Crayola)
-        0xFF1F75FE, // Blue (Crayola)
-        0xFF9400D3, // Purple
-        0xFF33B5E5, // ICS Blue
-        0xFFC8385A, // Maroon
-        0xFF18A7B5, // Teal Blue
-        0xFFFF7538, // Orange (Crayola)
-        0xFF5D76CB, // Indigo (Crayola)
-    };
-    
     private static final String TAG = "CourseParser";
     
     // prevent user to instantiate using default constructor

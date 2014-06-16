@@ -52,7 +52,7 @@ public class TimeTableSpinnerAdapter extends BaseAdapter
         mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         
         mViewTypeStrings = context.getResources().getStringArray(R.array.navigation_action_list);
-        mDayStrings = context.getResources().getStringArray(R.array.day_long_string);
+        mDayStrings = context.getResources().getStringArray(R.array.long_day_string);
         
         mViewType = viewType;
     }

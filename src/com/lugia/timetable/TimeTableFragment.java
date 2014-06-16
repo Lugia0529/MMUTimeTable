@@ -17,7 +17,6 @@
 package com.lugia.timetable;
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -49,32 +48,10 @@ public class TimeTableFragment extends Fragment implements TimeTableLayout.OnIte
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.d(TAG, "onCreateView()");
-
-        Resources res = getResources();
         
-        mColors = new int[]
-        {
-            res.getColor(R.color.border_1),
-            res.getColor(R.color.border_2),
-            res.getColor(R.color.border_3),
-            res.getColor(R.color.border_4),
-            res.getColor(R.color.border_5),
-            res.getColor(R.color.border_6),
-            res.getColor(R.color.border_7),
-            res.getColor(R.color.border_8)
-        };
+        mColors = Utils.getForegroundColorArrays(getActivity());
         
-        mBackgrounds = new int[]
-        {
-            R.drawable.subject_background_1,
-            R.drawable.subject_background_2,
-            R.drawable.subject_background_3,
-            R.drawable.subject_background_4,
-            R.drawable.subject_background_5,
-            R.drawable.subject_background_6,
-            R.drawable.subject_background_7,
-            R.drawable.subject_background_8
-        };
+        mBackgrounds = Utils.getBackgroundDrawableResourceIds();
         
         View view = inflater.inflate(R.layout.fragment_time_table, null);
 

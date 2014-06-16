@@ -16,12 +16,17 @@
 
 package com.lugia.timetable;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.text.format.DateFormat;
 
 import java.util.Calendar;
 
 public final class Utils
 {
+    public static final int SHORT_WEEK_NAME = 0;
+    public static final int LONG_WEEK_NAME  = 1;
+    
     public static String milliesToDateTimeString(String format, long timeMillies)
     {
         final Calendar calendar = Calendar.getInstance();
@@ -69,5 +74,83 @@ public final class Utils
         calendar.set(Calendar.SECOND,      second);
         
         return DateFormat.format(format, calendar).toString();
+    }
+    
+    // array
+    public static String[] getWeekNameString(Context context, int type)
+    {
+        if (type == SHORT_WEEK_NAME)
+            return context.getResources().getStringArray(R.array.short_day_string);
+        else
+            return context.getResources().getStringArray(R.array.long_day_string);
+    }
+    
+    public static String[] getTimeNameString(Context context)
+    {
+        return context.getResources().getStringArray(R.array.time_string);
+    }
+    
+    public static int[] getBackgroundColorArrays(Context context)
+    {
+        Resources res = context.getResources();
+        
+        return new int[]
+        {
+            res.getColor(R.color.background_1),
+            res.getColor(R.color.background_2),
+            res.getColor(R.color.background_3),
+            res.getColor(R.color.background_4),
+            res.getColor(R.color.background_5),
+            res.getColor(R.color.background_6),
+            res.getColor(R.color.background_7),
+            res.getColor(R.color.background_8)
+        };
+    }
+    
+    public static int[] getForegroundColorArrays(Context context)
+    {
+        Resources res = context.getResources();
+
+        return new int[]
+        {
+            res.getColor(R.color.foreground_1),
+            res.getColor(R.color.foreground_2),
+            res.getColor(R.color.foreground_3),
+            res.getColor(R.color.foreground_4),
+            res.getColor(R.color.foreground_5),
+            res.getColor(R.color.foreground_6),
+            res.getColor(R.color.foreground_7),
+            res.getColor(R.color.foreground_8)
+        };
+    }
+    
+    public static int[] getBackgroundDrawableResourceIds()
+    {
+        return new int[]
+        {
+            R.drawable.subject_background_1,
+            R.drawable.subject_background_2,
+            R.drawable.subject_background_3,
+            R.drawable.subject_background_4,
+            R.drawable.subject_background_5,
+            R.drawable.subject_background_6,
+            R.drawable.subject_background_7,
+            R.drawable.subject_background_8
+        };
+    }
+    
+    public static int getBackgroundColor(Context context, int index)
+    {
+        return getBackgroundColorArrays(context)[index];
+    }
+    
+    public static int getForegroundColor(Context context, int index)
+    {
+        return getForegroundColorArrays(context)[index];
+    }
+    
+    public static int getBackgroundDrawableResourceId(int index)
+    {
+        return getBackgroundDrawableResourceIds()[index];
     }
 }

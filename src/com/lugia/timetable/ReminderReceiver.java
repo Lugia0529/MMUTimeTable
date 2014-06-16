@@ -76,8 +76,8 @@ public class ReminderReceiver extends BroadcastReceiver
         if (subjectList == null || subjectList.size() == 0)
             return;
 
-        mDayStrings = context.getResources().getStringArray(R.array.day_long_string);
-        mTimeStrings = context.getResources().getStringArray(R.array.full_time_string);
+        mDayStrings = context.getResources().getStringArray(R.array.long_day_string);
+        mTimeStrings = context.getResources().getStringArray(R.array.time_string);
 
         int notifyBefore = Integer.parseInt(SettingActivity.getString(context, SettingActivity.KEY_SCHEDULE_NOTIFY_BEFORE, "15"));
         

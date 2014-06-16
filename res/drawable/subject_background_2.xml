@@ -10,7 +10,7 @@
     
     <stroke
         android:width="1dip"
-        android:color="@color/border_2"
+        android:color="@color/foreground_2"
     />
     
 </shape>

@@ -21,7 +21,6 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -33,10 +32,6 @@ import android.widget.Toast;
 public class EventDetailDialogFragment extends DialogFragment implements View.OnClickListener
 {
     private OnEventDeletedListener mEventUpdateListener = null;
-
-    private static int[] mBackgroundColors;
-    private static int[] mTextColors;
-    private static int[] mBackgrounds;
     
     public static final String EXTRA_SUBJECT_CODE = "com.lugia.timetable.SubjectCode";
     public static final String EXTRA_EVENT_ID     = "com.lugia.timetable.EventId";
@@ -57,44 +52,6 @@ public class EventDetailDialogFragment extends DialogFragment implements View.On
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
         AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-
-        Resources res = getResources();
-
-        mBackgroundColors = new int[]
-        {
-            res.getColor(R.color.background_1),
-            res.getColor(R.color.background_2),
-            res.getColor(R.color.background_3),
-            res.getColor(R.color.background_4),
-            res.getColor(R.color.background_5),
-            res.getColor(R.color.background_6),
-            res.getColor(R.color.background_7),
-            res.getColor(R.color.background_8)
-        };
-
-        mTextColors = new int[]
-        {
-            res.getColor(R.color.border_1),
-            res.getColor(R.color.border_2),
-            res.getColor(R.color.border_3),
-            res.getColor(R.color.border_4),
-            res.getColor(R.color.border_5),
-            res.getColor(R.color.border_6),
-            res.getColor(R.color.border_7),
-            res.getColor(R.color.border_8)
-        };
-
-        mBackgrounds = new int[]
-        {
-            R.drawable.subject_background_1,
-            R.drawable.subject_background_2,
-            R.drawable.subject_background_3,
-            R.drawable.subject_background_4,
-            R.drawable.subject_background_5,
-            R.drawable.subject_background_6,
-            R.drawable.subject_background_7,
-            R.drawable.subject_background_8
-        };
         
         dialog.setView(createView());
         
@@ -110,7 +67,7 @@ public class EventDetailDialogFragment extends DialogFragment implements View.On
         Subject subject = SubjectList.getInstance(getActivity()).findSubject(subjectCode);
         Event event = subject.findEvent(eventId);
         
-        int color = subject.getColor();
+        int color = Utils.getForegroundColor(getActivity(), subject.getColor());
         
         String date  = Utils.getDateString("EE, MMM dd, yyyy", event.getYear(), event.getMonth(), event.getDay());
         String start = Utils.getTimeString("h:mm aa", event.getStartHour(), event.getStartMinute());
@@ -133,8 +90,8 @@ public class EventDetailDialogFragment extends DialogFragment implements View.On
         TextView typeTextView  = (TextView)view.findViewById(R.id.text_event_type);
         TextView noteTextView  = (TextView)view.findViewById(R.id.text_event_note);
         
-        headerLayout.setBackgroundColor(mTextColors[color]);
-        dividerView.setBackgroundColor(mTextColors[color]);
+        headerLayout.setBackgroundColor(color);
+        dividerView.setBackgroundColor(color);
         
         if (editable)
         {
@@ -152,12 +109,6 @@ public class EventDetailDialogFragment extends DialogFragment implements View.On
         timeTextView.setText(String.format("%s, %s - %s", date, start, end));
         typeTextView.setText(eventType[event.getType()]);
         noteTextView.setText(event.getNote());
-        
-        //nameTextView.setTextColor(mTextColors[color]);
-        //venueTextView.setTextColor(mTextColors[color]);
-        //timeTextView.setTextColor(mTextColors[color]);
-        //typeTextView.setTextColor(mTextColors[color]);
-        //noteTextView.setTextColor(mTextColors[color]);
         
         if (TextUtils.isEmpty(venueTextView.getText()))
             venueTextView.setVisibility(View.GONE);
