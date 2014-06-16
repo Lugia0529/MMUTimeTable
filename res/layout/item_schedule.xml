@@ -15,50 +15,54 @@
     limitations under the License.
  -->
  
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:lugia="http://schemas.android.com/apk/res/com.lugia.timetable"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingTop="3dip"
-    android:paddingLeft="4dip"
-    android:paddingRight="4dip"
-    android:orientation="vertical">
+    android:layout_height="wrap_content"
+    android:layout_margin="4dip"
+    android:padding="4dip">
     
-    <TextView
+    <com.lugia.timetable.TypefaceTextView
         android:id="@+id/text_day"
-        android:layout_width="match_parent"
+        android:layout_width="76dip"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:paddingLeft="10dip"
         android:text="@string/text_day"
+        android:textSize="24sp"
         android:singleLine="true"
-        style="@style/ListItemText"
+        lugia:typeface="@string/font_medium"
     />
     
-    <TextView
+    <com.lugia.timetable.TypefaceTextView
         android:id="@+id/text_time"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/text_day"
+        android:paddingTop="3dip"
+        android:paddingBottom="2dip"
+        android:paddingLeft="3dip"
         android:text="@string/text_time"
+        android:textSize="16sp"
         android:singleLine="true"
-        style="@style/ListItemText"
+        lugia:typeface="@string/font_medium"
     />
     
-    <TextView
+    <com.lugia.timetable.TypefaceTextView
         android:id="@+id/text_room"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/text_day"
+        android:layout_below="@id/text_time"
+        android:paddingTop="2dip"
+        android:paddingBottom="3dip"
+        android:paddingLeft="3dip"
         android:text="@string/text_room"
+        android:textSize="16sp"
         android:singleLine="true"
-        style="@style/ListItemText"
+        lugia:typeface="@string/font_medium"
     />
     
-    <View
-        android:id="@+id/view_divider"
-        android:layout_width="match_parent"
-        android:layout_height="1dip"
-        android:layout_marginTop="3dip"
-        android:layout_marginLeft="4dip"
-        android:layout_marginRight="4dip"
-        android:background="#FFCDCDCD"
-    />
-    
-</LinearLayout>
+</RelativeLayout>

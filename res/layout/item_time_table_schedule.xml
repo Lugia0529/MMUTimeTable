@@ -17,51 +17,51 @@
 
 <LinearLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:lugia="http://schemas.android.com/apk/res/com.lugia.timetable"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="3dip"
     android:gravity="center">
 
-    <TextView
+    <com.lugia.timetable.TypefaceTextView
         android:id="@+id/text_subject_code"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/text_subject_code"
-        android:textColor="#FFF9F9F9"
         android:singleLine="true"
         android:gravity="center"
-        
+        lugia:typeface="@string/font_medium"
     />
 
-    <TextView
+    <com.lugia.timetable.TypefaceTextView
         android:id="@+id/text_subject_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/text_subject_description"
-        android:textColor="#FFF9F9F9"
         android:maxLines="2"
         android:gravity="center"
+        lugia:typeface="@string/font_medium"
     />
 
-    <TextView
+    <com.lugia.timetable.TypefaceTextView
         android:id="@+id/text_section"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/text_section"
-        android:textColor="#FFF9F9F9"
         android:singleLine="true"
         android:gravity="center"
+        lugia:typeface="@string/font_medium"
     />
     
-    <TextView
+    <com.lugia.timetable.TypefaceTextView
         android:id="@+id/text_room"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/text_room"
-        android:textColor="#FFF9F9F9"
         android:singleLine="true"
         android:gravity="center"
+        lugia:typeface="@string/font_medium"
     />
     
 </LinearLayout>

@@ -48,4 +48,8 @@
         <attr name="time" format="integer" />
         <attr name="duration" format="integer" />
     </declare-styleable>
+    
+    <declare-styleable name="TypefaceTextView">
+        <attr name="typeface" format="string" />
+    </declare-styleable>
 </resources>

@@ -21,6 +21,7 @@ import java.util.List;
 
 import android.app.ActionBar;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -50,16 +51,20 @@ public class SubjectDetailActivity extends FragmentActivity
     public static final String EXTRA_SUBJECT_CODE = "com.lugia.timetable.SubjectCode";
     
     public static final String ACTION_VIEW_EVENT  = "com.lugia.timetabele.ViewEvent";
+
+    private static int[] mBackgroundColors;
+    private static int[] mTextColors;
+    private static int[] mBackgrounds;
     
     public static final String[] WEEKS = new String[]
     {
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
+        "SUN",
+        "MON",
+        "TUE",
+        "WED",
+        "THU",
+        "FRI",
+        "SAT"
     };
     
     public static final String[] TIMES = new String[]
@@ -76,10 +81,48 @@ public class SubjectDetailActivity extends FragmentActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subject_detail);
 
+        Resources res = getResources();
+
+        mBackgroundColors = new int[]
+        {
+            res.getColor(R.color.background_1),
+            res.getColor(R.color.background_2),
+            res.getColor(R.color.background_3),
+            res.getColor(R.color.background_4),
+            res.getColor(R.color.background_5),
+            res.getColor(R.color.background_6),
+            res.getColor(R.color.background_7),
+            res.getColor(R.color.background_8)
+        };
+        
+        mTextColors = new int[]
+        {
+            res.getColor(R.color.border_1),
+            res.getColor(R.color.border_2),
+            res.getColor(R.color.border_3),
+            res.getColor(R.color.border_4),
+            res.getColor(R.color.border_5),
+            res.getColor(R.color.border_6),
+            res.getColor(R.color.border_7),
+            res.getColor(R.color.border_8)
+        };
+
+        mBackgrounds = new int[]
+        {
+            R.drawable.subject_background_1,
+            R.drawable.subject_background_2,
+            R.drawable.subject_background_3,
+            R.drawable.subject_background_4,
+            R.drawable.subject_background_5,
+            R.drawable.subject_background_6,
+            R.drawable.subject_background_7,
+            R.drawable.subject_background_8
+        };
+        
         final ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowTitleEnabled(false);
-
+        
         PagerAdapter adapter = new PagerAdapter(getSupportFragmentManager());
         
         ViewPager viewPager = (ViewPager)findViewById(R.id.pager);
@@ -100,7 +143,7 @@ public class SubjectDetailActivity extends FragmentActivity
 
         mSubject = subjectList.findSubject(subjectCode);
         
-        int color = mSubject.getColor();
+        int colorIndex = mSubject.getColor();
 
         String subjectDescription = mSubject.getSubjectDescription();
         String lectureSection     = mSubject.getLectureSection();
@@ -109,15 +152,18 @@ public class SubjectDetailActivity extends FragmentActivity
         int creditHours = mSubject.getCreditHours();
 
         viewPager.setAdapter(adapter);
-        headerLayout.setBackgroundColor(color);
-
-        tabStrip.setTextColor(color);
-        tabStrip.setTabIndicatorColor(color);
+        headerLayout.setBackgroundColor(mTextColors[colorIndex]);
+        
+        tabStrip.setTextColor(mTextColors[colorIndex]);
+        tabStrip.setTabIndicatorColor(mTextColors[colorIndex]);
 
         subjectTitleTextView.setText(subjectCode + " - " + subjectDescription);
         lectureSectionTextView.setText(lectureSection);
         tutorialSectionTextView.setText(tutorialSection);
         creditHoursTextView.setText(creditHours + " Credit Hours");
+        
+        if (tutorialSection == null)
+            tutorialSectionTextView.setVisibility(View.GONE);
         
         // user click the event reminder notification, show the event detail
         if (getIntent().getAction() != null && getIntent().getAction().equals(ACTION_VIEW_EVENT))
@@ -331,7 +377,7 @@ public class SubjectDetailActivity extends FragmentActivity
                 if (convertView == null)
                 {
                     LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
+                    
                     Schedule schedule = mList.get(position);
                     
                     // separator
@@ -340,10 +386,8 @@ public class SubjectDetailActivity extends FragmentActivity
                         convertView = inflater.inflate(R.layout.item_section_divider, null);
                         
                         TextView headerTextView = (TextView)convertView.findViewById(R.id.text_header);
-                        View dividerView = convertView.findViewById(R.id.view_divider);
                         
-                        headerTextView.setTextColor(mSubject.getColor());
-                        dividerView.setBackgroundColor(mSubject.getColor());
+                        headerTextView.setTextColor(mTextColors[mSubject.getColor()]);
                         
                         if (position == getBasePosition(Schedule.LECTURE_SECTION))
                             headerTextView.setText("Lecture Section");
@@ -354,19 +398,19 @@ public class SubjectDetailActivity extends FragmentActivity
                     {
                         convertView = inflater.inflate(R.layout.item_schedule, null);
                         
+                        convertView.setBackgroundResource(mBackgrounds[mSubject.getColor()]);
+                        
                         TextView dayTextView = (TextView)convertView.findViewById(R.id.text_day);
                         TextView timeTextView = (TextView)convertView.findViewById(R.id.text_time);
                         TextView roomTextView = (TextView)convertView.findViewById(R.id.text_room);
                         
-                        dayTextView.setText("Day: " + WEEKS[schedule.getDay()]);
-                        timeTextView.setText("Time: " + TIMES[schedule.getTime()] + " - " + TIMES[schedule.getTime() + schedule.getLength()]);
-                        roomTextView.setText("Room: " + schedule.getRoom());
+                        dayTextView.setText(WEEKS[schedule.getDay()]);
+                        timeTextView.setText(TIMES[schedule.getTime()] + " - " + TIMES[schedule.getTime() + schedule.getLength()]);
+                        roomTextView.setText(schedule.getRoom());
                         
-                        if ((hasLectureSection() && position == mLectureCount) || position == mList.size() - 1)
-                        {
-                            View dividerView = convertView.findViewById(R.id.view_divider);
-                            dividerView.setVisibility(View.INVISIBLE);
-                        }
+                        dayTextView.setTextColor(mTextColors[mSubject.getColor()]);
+                        timeTextView.setTextColor(mTextColors[mSubject.getColor()]);
+                        roomTextView.setTextColor(mTextColors[mSubject.getColor()]);
                     }
                 }
                 
@@ -503,6 +547,8 @@ public class SubjectDetailActivity extends FragmentActivity
 
                 if (event != null)
                 {
+                    convertView.setBackgroundResource(mBackgrounds[mSubject.getColor()]);
+                    
                     String dateStr = Utils.getDateString("EE, MMM dd, yyyy", event.getYear(), event.getMonth(), event.getDay());
                     String timeStartStr = Utils.getTimeString("h:mm aa", event.getStartHour(), event.getEndMinute());
                     String timeEndStr = Utils.getTimeString("h:mm aa", event.getEndHour(), event.getEndMinute());
@@ -517,6 +563,10 @@ public class SubjectDetailActivity extends FragmentActivity
                     nameTextView.setText(event.getName());
                     venueTextView.setText(event.getVenue());
                     timeTextView.setText(dateStr + ", " + timeStartStr + " - " + timeEndStr);
+                    
+                    nameTextView.setTextColor(mTextColors[mSubject.getColor()]);
+                    venueTextView.setTextColor(mTextColors[mSubject.getColor()]);
+                    timeTextView.setTextColor(mTextColors[mSubject.getColor()]);
                 }
 
                 return convertView;

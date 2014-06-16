@@ -17,6 +17,7 @@
 package com.lugia.timetable;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -30,6 +31,9 @@ import java.util.Calendar;
 public class TimeTableFragment extends Fragment implements TimeTableLayout.OnItemClickListener
 {
     private TimeTableLayout mTimeTable;
+    
+    private int[] mBackgrounds;
+    private int[] mColors;
     
     private static final String TAG = "TimeTableFragment";
 
@@ -45,19 +49,47 @@ public class TimeTableFragment extends Fragment implements TimeTableLayout.OnIte
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.d(TAG, "onCreateView()");
+
+        Resources res = getResources();
+        
+        mColors = new int[]
+        {
+            res.getColor(R.color.border_1),
+            res.getColor(R.color.border_2),
+            res.getColor(R.color.border_3),
+            res.getColor(R.color.border_4),
+            res.getColor(R.color.border_5),
+            res.getColor(R.color.border_6),
+            res.getColor(R.color.border_7),
+            res.getColor(R.color.border_8)
+        };
+        
+        mBackgrounds = new int[]
+        {
+            R.drawable.subject_background_1,
+            R.drawable.subject_background_2,
+            R.drawable.subject_background_3,
+            R.drawable.subject_background_4,
+            R.drawable.subject_background_5,
+            R.drawable.subject_background_6,
+            R.drawable.subject_background_7,
+            R.drawable.subject_background_8
+        };
         
         View view = inflater.inflate(R.layout.fragment_time_table, null);
-        
+
         mTimeTable = (TimeTableLayout)view.findViewById(R.id.time_table);
         
         SubjectList subjects = SubjectList.getInstance(getActivity());
         
         for (Subject subject : subjects)
         {
+            int colorIndex = subject.getColor();
+            
             for (Schedule schedule: subject.getSchedules())
             {
                 View child = inflater.inflate(R.layout.item_time_table_schedule, mTimeTable, false);
-                child.setBackgroundColor(subject.getColor());
+                child.setBackgroundResource(mBackgrounds[colorIndex]);
                 child.setTag(subject.getSubjectCode());
                 
                 TextView subjectCodeTextView = (TextView)child.findViewById(R.id.text_subject_code);
@@ -69,6 +101,11 @@ public class TimeTableFragment extends Fragment implements TimeTableLayout.OnIte
                 subjectDescriptionTextView.setText(subject.getSubjectDescription());
                 sectionTextView.setText(subject.getSection(schedule.getSection()));
                 roomTextView.setText(schedule.getRoom());
+                
+                subjectCodeTextView.setTextColor(mColors[colorIndex]);
+                subjectDescriptionTextView.setTextColor(mColors[colorIndex]);
+                sectionTextView.setTextColor(mColors[colorIndex]);
+                roomTextView.setTextColor(mColors[colorIndex]);
                 
                 mTimeTable.addView(child, schedule.getDay(), schedule.getTime(), schedule.getLength());
             }

@@ -17,13 +17,13 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:lugia="http://schemas.android.com/apk/res/com.lugia.timetable"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="2dip"
-    android:paddingBottom="2dip"
+    android:paddingTop="10dip"
     android:orientation="vertical">
     
-    <TextView
+    <com.lugia.timetable.TypefaceTextView
         android:id="@+id/text_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -31,16 +31,7 @@
         android:text="@string/text_list_header"
         android:textColor="#FF000000"
         android:textIsSelectable="false"
-        style="@style/ListHeaderText"
-    />
-    
-    <View
-        android:id="@+id/view_divider"
-        android:layout_width="match_parent"
-        android:layout_height="2dip"
-        android:layout_marginTop="2dip"
-        android:layout_marginLeft="8dip"
-        android:background="#FF000000"
+        lugia:typeface="@string/font_bold"
     />
     
 </LinearLayout>

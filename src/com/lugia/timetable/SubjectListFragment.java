@@ -16,6 +16,7 @@
 
 package com.lugia.timetable;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -34,12 +35,41 @@ public class SubjectListFragment extends Fragment implements AdapterView.OnItemC
     
     private ListView mListView;
     private SubjectAdaptor mSubjectAdaptor;
+
+    private int[] mBackgrounds;
+    private int[] mColors;
     
     private static final String TAG = "SubjectListActivity";
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
+        Resources res = getResources();
+
+        mColors = new int[]
+        {
+            res.getColor(R.color.border_1),
+            res.getColor(R.color.border_2),
+            res.getColor(R.color.border_3),
+            res.getColor(R.color.border_4),
+            res.getColor(R.color.border_5),
+            res.getColor(R.color.border_6),
+            res.getColor(R.color.border_7),
+            res.getColor(R.color.border_8)
+        };
+
+        mBackgrounds = new int[]
+        {
+            R.drawable.subject_background_1,
+            R.drawable.subject_background_2,
+            R.drawable.subject_background_3,
+            R.drawable.subject_background_4,
+            R.drawable.subject_background_5,
+            R.drawable.subject_background_6,
+            R.drawable.subject_background_7,
+            R.drawable.subject_background_8
+        };
+
         View view = inflater.inflate(R.layout.fragment_subject_list, container, false);
         
         mLayoutInflater = inflater;
@@ -86,13 +116,18 @@ public class SubjectListFragment extends Fragment implements AdapterView.OnItemC
             
             if (subject != null)
             {
-                View colorView = convertView.findViewById(R.id.view_color);
+                int colorIndex = subject.getColor();
+                
+                convertView.setBackgroundResource(mBackgrounds[colorIndex]);
+                
                 TextView subjectCodeTextView = (TextView)convertView.findViewById(R.id.text_subject_code);
                 TextView subjectDescTextView = (TextView)convertView.findViewById(R.id.text_subject_description);
                 
-                colorView.setBackgroundColor(subject.getColor());
                 subjectCodeTextView.setText(subject.getSubjectCode());
                 subjectDescTextView.setText(subject.getSubjectDescription());
+
+                subjectCodeTextView.setTextColor(mColors[colorIndex]);
+                subjectDescTextView.setTextColor(mColors[colorIndex]);
             }
             
             return convertView;

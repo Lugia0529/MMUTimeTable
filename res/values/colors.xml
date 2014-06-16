@@ -18,4 +18,23 @@
 <resources>
     <color name="timetable_grid_line_color">#ffc6c6c6</color>
     <color name="timetable_time_background_color">#ffe6e6e6</color>
+
+    <color name="border_1">#FFC8385A</color>
+    <color name="border_2">#FFFF7538</color>
+    <color name="border_3">#FFFFD300</color>
+    <color name="border_4">#FF1CA778</color>
+    <color name="border_5">#FF1F75FE</color>
+    <color name="border_6">#FF5D76CB</color>
+    <color name="border_7">#FFBC33E5</color>
+    <color name="border_8">#FFCFCFCF</color>
+
+    <color name="background_1">#FFF2D2D9</color>
+    <color name="background_2">#FFFFE2D5</color>
+    <color name="background_3">#FFFFF8D8</color>
+    <color name="background_4">#FFDCF9EF</color>
+    <color name="background_5">#FFCFE1FF</color>
+    <color name="background_6">#FFD4DAF1</color>
+    <color name="background_7">#FFEFD0F9</color>
+    <color name="background_8">#FFE3E3E3</color>
+
 </resources>

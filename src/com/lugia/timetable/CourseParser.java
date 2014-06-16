@@ -182,7 +182,7 @@ public class CourseParser
             
             int creditsHour = Integer.parseInt(creditsHourString);
             
-            int color = BG_COLORS[count++]; 
+            int color = count++; 
             
             Subject subject = new Subject(subjectCode, subjectDescription, lectureSection, tutorialSection, creditsHour, color);
             

@@ -20,6 +20,10 @@
     <string name="app_name">TimeTable</string>
     <string name="menu_settings">Settings</string>
     
+    <string name="font_light">Yaahowu Light.ttf</string>
+    <string name="font_medium">Yaahowu.ttf</string>
+    <string name="font_bold">Yaahowu Bold.ttf</string>
+    
     <string name="text_login">Please enter your MMU ID and Password, the course detail will fetch in second.</string>
     <string name="text_subject_code">Subject Code</string>
     <string name="text_subject_description">Subject Description</string>
@@ -28,6 +32,7 @@
     <string name="text_tutorial_section">Tutorial Section</string>
     <string name="text_credit_hour">Credit Hour</string>
     <string name="text_name">Name</string>
+    <string name="text_section">Section</string>
     <string name="text_day">Day</string>
     <string name="text_time">Time</string>
     <string name="text_room">Room</string>
@@ -152,7 +157,7 @@
     <string name="preference_notify_sound_title">Sound</string>
     <string name="preference_notify_vibrate_title">Vibrate</string>
     <string name="preference_notify_before_title">Notify before</string>
-    <string name="text_section">Section</string>
+    
 
     <string-array name="event_type_string">
         <item>Class replacement</item>

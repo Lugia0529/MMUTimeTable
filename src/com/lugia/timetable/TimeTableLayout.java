@@ -28,6 +28,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -98,7 +99,7 @@ public class TimeTableLayout extends ViewGroup
     
     private final String[] DAY_FULL_STRING = new String[]
     {
-        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"        
+        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
     };
     
     private final String[] TIME_STRING = new String[]
@@ -186,12 +187,15 @@ public class TimeTableLayout extends ViewGroup
         
         setFocusableInTouchMode(true);
         
+        Typeface font = Typeface.createFromAsset(context.getAssets(), context.getResources().getString(R.string.font_medium));
+        
         mTextPaint = new Paint();
         mTextPaint.setAntiAlias(true);
         mTextPaint.setColor(Color.BLACK);
         mTextPaint.setTextSize(mTextSize);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
         mTextPaint.setStyle(Paint.Style.STROKE);
+        mTextPaint.setTypeface(font);
         
         mLinePaint = new Paint();
         mLinePaint.setAntiAlias(true);
@@ -213,7 +217,6 @@ public class TimeTableLayout extends ViewGroup
         mScrollX = 0;
         
         mScrollMode = SCROLL_MODE_NONE;
-
     }
 
     @Override

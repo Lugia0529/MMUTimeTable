@@ -25,6 +25,9 @@
         android:id="@+id/list_event"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
+        android:padding="8dip"
+        android:divider="@null"
+        android:dividerHeight="6dip"
     />
 
     <TextView

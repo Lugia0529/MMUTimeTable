@@ -22,9 +22,12 @@
     android:orientation="vertical">
     
     <ListView
-        android:id="@+id/list_subject" 
+        android:id="@+id/list_subject"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="8dip"
+        android:divider="@null"
+        android:dividerHeight="6dip"
     />
 
 </LinearLayout>
