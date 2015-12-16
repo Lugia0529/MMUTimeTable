@@ -13,37 +13,37 @@
  * See the License for the specific language governing permissions and 
  * limitations under the License.
  */
-
-package com.lugia.timetable;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
-
-import android.os.Bundle;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
+    
+    package com.lugia.timetable;
+    
+    import java.util.ArrayList;
+    import java.util.List;
+    
+    import org.apache.http.HttpEntity;
+    import org.apache.http.HttpResponse;
+    import org.apache.http.HttpStatus;
+    import org.apache.http.NameValuePair;
+    import org.apache.http.client.entity.UrlEncodedFormEntity;
+    import org.apache.http.client.methods.HttpGet;
+    import org.apache.http.client.methods.HttpPost;
+    import org.apache.http.message.BasicNameValuePair;
+    import org.apache.http.util.EntityUtils;
+    
+    import android.os.Bundle;
+    import android.app.Activity;
+    import android.app.AlertDialog;
+    import android.app.ProgressDialog;
+    import android.content.Context;
+    import android.content.DialogInterface;
+    import android.text.Editable;
+    import android.text.TextWatcher;
+    import android.util.Log;
+    import android.view.View;
+    import android.view.View.OnClickListener;
+    import android.view.inputmethod.InputMethodManager;
+    import android.widget.Button;
+    import android.widget.EditText;
+    import android.widget.Toast;
 
 /**
  * Activity that allow user to enter MMU ID and password to retrieve their course data.
@@ -79,7 +79,7 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
         mContinueButton = (Button)findViewById(R.id.button_continue);
         mContinueButton.setOnClickListener(this);
     }
-
+    
     public void onClick(View v)
     {
         // not continue button? i really not sure what you have clicked.
@@ -107,7 +107,7 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
         else
             mContinueButton.setEnabled(false);
     }
-
+    
     public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do Nothing */ }
     public void onTextChanged(CharSequence s, int start, int before, int count) { /* Do Nothing */ }
     
@@ -138,18 +138,18 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
             {
                 // notify user
                 new AlertDialog.Builder(LoginActivity.this)
-                               .setTitle("Opps!")
-                               .setMessage("Fail to download course data, please make sure you have entered a correct MMU ID and password.")
-                               .setPositiveButton("Close", new DialogInterface.OnClickListener()
-                                {
-                                    public void onClick(DialogInterface dialog, int which)
-                                    {
-                                        
-                                    }
-                                })
-                               .create()
-                               .show();
-
+                    .setTitle("Opps!")
+                    .setMessage("Fail to download course data, please make sure you have entered a correct MMU ID and password.")
+                    .setPositiveButton("Close", new DialogInterface.OnClickListener()
+                    {
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            
+                        }
+                    })
+                    .create()
+                    .show();
+                
             }
         });
     }
@@ -189,7 +189,7 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
                 HttpPost loginPost = new HttpPost(LOGIN_URL);
                 loginPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
                 
-                setProgressMessage("Logging in...");        
+                setProgressMessage("Logging in...");
                 
                 // try to login
                 client.executeResponse(loginPost);
@@ -228,7 +228,7 @@ public class LoginActivity extends Activity implements OnClickListener, TextWatc
                     displayLoginFailDialog();
                     return;
                 }
-
+                
                 SubjectList subjectList = SubjectList.getInstance(LoginActivity.this);
                 subjectList.replace(temp);
                 
